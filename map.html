@@ -1,57 +1,49 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Just The Two Of Us</title>
+  <meta charset="UTF-8">
+  <title>Just The Two Of Us - Map</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
-    h2, h3 { text-align: center; color: #333; }
-    #map { height: 500px; width: 100%; margin-bottom: 20px; border: 2px solid #ccc; border-radius: 8px; }
-    #place-list { 
-      display: grid; 
-      grid-template-columns: repeat(4, 1fr); 
-      gap: 10px; 
-      max-width: 1200px; 
-      margin: 0 auto; 
+    body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+    #map { height: 500px; width: 100%; margin-bottom: 20px; }
+    .places-container {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
     }
     .place {
       cursor: pointer;
-      background: #fff;
-      padding: 6px 10px;
-      border-radius: 4px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-      font-size: 14px;
-      transition: background 0.2s, transform 0.2s;
+      color: #0077cc;
+      padding: 4px;
+      border-bottom: 1px solid #ddd;
     }
-    .place:hover {
-      background: #0077cc;
-      color: #fff;
-      transform: scale(1.03);
-    }
+    .place:hover { text-decoration: underline; }
+    .place-number { font-weight: bold; margin-right: 4px; }
   </style>
 </head>
 <body>
 
 <script>
-  // Prompt for password
+  // Password protection
   let password = prompt("Enter the password to view the map:");
   if (password !== "march18") {
-      document.body.innerHTML = "<h2>Access Denied</h2>";
-      throw "Wrong password";
+    document.body.innerHTML = "<h2>Access Denied</h2>";
+    throw "Wrong password";
   }
 </script>
 
 <h2>Our Special Places</h2>
 <div id="map"></div>
 
-<h3>Click a place:</h3>
-<div id="place-list"></div>
+<h3>Click a place to zoom:</h3>
+<div class="places-container" id="places-list"></div>
 
 <script>
-let map;
+  let map;
 
-// ===== Marker Data =====
-const markers = [
-  {lat:-31.8991337, lng:115.9705556, title:"Alfred's Kitchen"},
+  // Add all your places here
+  const places = [
+{lat:-31.8991337, lng:115.9705556, title:"Alfred's Kitchen"},
   {lat:-31.795539454625345, lng:116.00390485450978, title:"All Saints Anglican Church"},
   {lat:-31.8994038, lng:116.020155, title:"Annie's COLLECTIVE Wonderland"},
   {lat:-31.8266389, lng:115.7375391, title:"AQWA"},
@@ -160,57 +152,50 @@ const markers = [
   {lat:-31.90525794878862, lng:116.76271889145113, title:"York Canola Fields"},
   {lat:-31.946821101184497, lng:115.8294017986926, title:"Yours Truly"},
   {lat:-32.0355268, lng:116.1059094, title:"Yvette's Place"}
-];
+  ];
 
-function initMap() {
-  map = new google.maps.Map(document.getElementById("map"), {
-    center: { lat: -31.9523, lng: 115.8613 },
-    zoom: 12,
-    styles: [
-      {"featureType":"all","elementType":"labels","stylers":[{"visibility":"off"}]},
-      {"featureType":"poi.park","elementType":"geometry.fill","stylers":[{"color":"#aadd55"}]},
-      {"featureType":"road.highway","elementType":"labels","stylers":[{"visibility":"off"},{"hue":"#ff0000"}]},
-      {"featureType":"road.arterial","elementType":"labels.text","stylers":[{"visibility":"on"}]},
-      {"featureType":"road.local","elementType":"labels.text","stylers":[{"visibility":"on"}]},
-      {"featureType":"water","elementType":"geometry.fill","stylers":[{"color":"#0099dd"}]}
-    ]
-  });
-
-  markers.forEach((m, index) => {
-    const marker = new google.maps.Marker({
-      position: { lat: m.lat, lng: m.lng },
-      map: map,
-      title: m.title,
-      icon: {
-        url: `https://chart.googleapis.com/chart?chst=d_map_pin_letter&chld=${index+1}|FF776B|000000`,
-        scaledSize: new google.maps.Size(25, 40)
-      }
+  function initMap() {
+    map = new google.maps.Map(document.getElementById("map"), {
+      center: { lat: -31.9523, lng: 115.8613 },
+      zoom: 12,
+      styles: [
+        {"featureType":"all","elementType":"labels","stylers":[{"visibility":"off"}]},
+        {"featureType":"poi.park","elementType":"geometry.fill","stylers":[{"color":"#aadd55"}]},
+        {"featureType":"road.highway","elementType":"labels","stylers":[{"visibility":"off"},{"hue":"#ff0000"}]},
+        {"featureType":"road.arterial","elementType":"labels.text","stylers":[{"visibility":"on"}]},
+        {"featureType":"road.local","elementType":"labels.text","stylers":[{"visibility":"on"}]},
+        {"featureType":"water","elementType":"geometry.fill","stylers":[{"color":"#0099dd"}]}
+      ]
     });
 
-    const infoWindow = new google.maps.InfoWindow({ content: `${index+1}. ${m.title}` });
-    marker.addListener("click", () => infoWindow.open(map, marker));
+    // Add numbered markers
+    places.forEach((place, index) => {
+      new google.maps.Marker({
+        position: {lat: place.lat, lng: place.lng},
+        map: map,
+        label: { text: (index+1).toString(), color: "white", fontWeight: "bold" },
+        title: place.title
+      });
+    });
 
-    // Create clickable list entry
-    const placeDiv = document.createElement("div");
-    placeDiv.className = "place";
-    placeDiv.textContent = `${index+1}. ${m.title}`;
-    placeDiv.onclick = () => zoomTo(m.lat, m.lng);
-    document.getElementById("place-list").appendChild(placeDiv);
-  });
-}
-
-function zoomTo(lat, lng) {
-  map.setCenter({ lat: lat, lng: lng });
-  map.setZoom(16);
-}
+    // Build clickable list
+    const listContainer = document.getElementById("places-list");
+    places.forEach((place, index) => {
+      const div = document.createElement("div");
+      div.className = "place";
+      div.innerHTML = `<span class="place-number">${index+1}</span>${place.title}`;
+      div.onclick = () => {
+        map.setCenter({lat: place.lat, lng: place.lng});
+        map.setZoom(16);
+      };
+      listContainer.appendChild(div);
+    });
+  }
 </script>
 
 <script async
-src="https://maps.googleapis.com/maps/api/js?key="KEY"&callback=initMap">
+  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAVImtk_O82lOoIWlJGkYM_sMw0oAYZIhQ&callback=initMap">
 </script>
 
 </body>
-
 </html>
-
-
