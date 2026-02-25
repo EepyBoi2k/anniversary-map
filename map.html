@@ -39,162 +39,63 @@
 <div class="places-container" id="places-list"></div>
 
 <script>
-  let map;
+let map;
 
-  // Add all your places here
-  const places = [
-{lat:-31.8991337, lng:115.9705556, title:"Alfred's Kitchen"},
-  {lat:-31.795539454625345, lng:116.00390485450978, title:"All Saints Anglican Church"},
-  {lat:-31.8994038, lng:116.020155, title:"Annie's COLLECTIVE Wonderland"},
-  {lat:-31.8266389, lng:115.7375391, title:"AQWA"},
-  {lat:-32.3723751, lng:116.0043601, title:"Baldwin's Bluff Lookout"},
-  {lat:-31.7326522, lng:115.7233855, title:"Bar Olé"},
-  {lat:-31.7739875, lng:116.0611045, title:"Bells Rapids Park"},
-  {lat:-31.773777692580012, lng:116.0610723103318, title:"Berry Reserve"},
-  {lat:-32.026358, lng:116.0407296, title:"Bickley Reservoir Walk Trail"},
-  {lat:-32.0431901, lng:115.8004884, title:"Blend Cafe and Pizza Bar"},
-  {lat:-31.9726535, lng:115.8957215, title:"Brown Spoon Victoria Park"},
-  {lat:-31.9038292, lng:116.1689976, title:"Cafe Mojo Mundaring"},
-  {lat:-32.0621675, lng:115.7568673, title:"Cafe on Hampton"},
-  {lat:-32.1524192, lng:116.1282342, title:"Canning Dam"},
-  {lat:-32.0210223, lng:115.9218452, title:"Canning River Cafe"},
-  {lat:-32.27148051500561, lng:115.68790456986964, title:"Cape Peron Lookout"},
-  {lat:-32.01933253443119, lng:115.93831052568281, title:"Carousel"},
-  {lat:-32.0631029, lng:115.781444, title:"Charlie's Coffee Bar"},
-  {lat:-32.0900659, lng:115.9429757, title:"Chimek Southern River"},
-  {lat:-31.9271277, lng:115.7659078, title:"City Beach"},
-  {lat:-32.1000267, lng:115.8212534, title:"Cockburn Ice Arena"},
-  {lat:-32.10376290000001, lng:116.0697657, title:"Coffee @ The Shed"},
-  {lat:-31.5609167, lng:115.6331172, title:"Compass Circle Lookout"},
-  {lat:-32.0537047, lng:115.7496739, title:"D'Angelo Cafè"},
-  {lat:-32.043195, lng:115.800215, title:"Delicious Fingers"},
-  {lat:-32.0375714, lng:115.7616933, title:"Dôme Café - East Fremantle"},
-  {lat:-31.8897722, lng:116.007075, title:"Dôme Café - Midland"},
-  {lat:-32.07124495594045, lng:115.75215766616569, title:"East West Design"},
-  {lat:-31.7649285, lng:115.9639425, title:"Ellenbrook Lookout"},
-  {lat:-31.9835249, lng:115.8998649, title:"Fish Boss & John Macmillan Park"},
-  {lat:-32.0562643, lng:115.7488507, title:"Fremantle Markets"},
-  {lat:-31.80500658835219, lng:115.80713094101641, title:"Galaxy Drive-In Theatre"},
-  {lat:-31.7928087, lng:116.1969935, title:"Gidgegannup Bakery & Cafe"},
-  {lat:-31.9101041, lng:116.1012747, title:"Glen Forrest Gourmet"},
-  {lat:-31.9598818, lng:116.157017, title:"Golden View Lookout"},
-  {lat:-31.9467507, lng:116.0496089, title:"Gooseberry Hill Lookout"},
-  {lat:-32.0677063, lng:115.9978935, title:"Gosnells Railway Markets"},
-  {lat:-31.9872924, lng:115.9047446, title:"Green Bunch"},
-  {lat:-31.8996294, lng:115.9017629, title:"Green St. Cafe"},
-  {lat:-31.9069047, lng:116.0589571, title:"Greenmount Lookout"},
-  {lat:-32.0558816, lng:115.7475818, title:"Grill'd Fremantle"},
-  {lat:-33.0570208, lng:115.9359604, title:"Harvey Dam Rocky Lookout"},
-  {lat:-32.05406640277117, lng:115.7933610158868, title:"Hot Shots"},
-  {lat:-32.0199279, lng:115.9388969, title:"HOYTS Carousel"},
-  {lat:-32.0568504, lng:115.879364, title:"HOYTS Southlands"},
-  {lat:-31.8803049, lng:116.0999287, title:"Hovea Falls"},
-  {lat:-31.896615952361834, lng:115.80393258519716, title:"IKEA"},
-  {lat:-31.9712291, lng:116.0585368, title:"Jack & Jill Kitchen"},
-  {lat:-32.0376717, lng:115.8063773, title:"Kadidjiny Park"},
-  {lat:-31.49644139999999, lng:115.586373, title:"King Neptune Statue"},
-  {lat:-31.9609106, lng:115.8321929, title:"Kings Park and Botanic Garden"},
-  {lat:-32.4132185, lng:116.0084313, title:"Kingsbury Lookout"},
-  {lat:-32.05199, lng:115.74861, title:"La Chiquita Cafe"},
-  {lat:-31.9950526, lng:116.0332615, title:"Lesmurdie Falls National Park"},
-  {lat:-32.01208740826408, lng:116.03424359869514, title:"Lions Lookout"},
-  {lat:-32.02619915479861, lng:115.78699382568308, title:"Little Stove"},
-  {lat:-31.9422512, lng:115.8415589, title:"Lunch Bar Twenty2"},
-  {lat:-32.0457205, lng:115.8186268, title:"Mekan Chargrill & Kebabs"},
-  {lat:-31.94714160444695, lng:115.85341975451556, title:"Metro City"},
-  {lat:-32.1266667, lng:116.2994444, title:"Mount Dale"},
-  {lat:-31.8968552, lng:116.5572508, title:"Mount Observation Lookout"},
-  {lat:-31.978796, lng:116.2031436, title:"Mundaring Weir"},
-  {lat:-31.9900131, lng:116.0327157, title:"Mundy Regional Park"},
-  {lat:-32.0046171, lng:115.9200703, title:"Muzz Buzz Bentley"},
-  {lat:-32.1111655, lng:115.8385989, title:"Muzz Buzz South Lake"},
-  {lat:-32.0282643, lng:115.9490057, title:"Muzz Buzz Cannington"},
-  {lat:-32.1279159, lng:115.8549374, title:"NeNe Chicken Cockburn Central"},
-  {lat:-31.9507492, lng:115.8887988, title:"Optus Stadium"},
-  {lat:-32.0454411, lng:115.8121607, title:"Pedal Cafe"},
-  {lat:-31.957810343196122, lng:115.86394934287037, title:"Perth Concert Hall"},
-  {lat:-32.0500193, lng:115.9802289, title:"Pinjarra Bakery"},
-  {lat:-32.0124215, lng:115.7872908, title:"Point Walter Reserve"},
-  {lat:-31.9404569, lng:115.7759844, title:"Reabold Hill Summit Lookout"},
-  {lat:-31.9674547, lng:115.9333106, title:"Reading Cinemas Belmont"},
-  {lat:-31.8363744, lng:116.0823603, title:"Red Hill Auditorium"},
-  {lat:-31.95591600696267, lng:115.85266358635424, title:"Riverside Theatre"},
-  {lat:-32.0679962, lng:115.7529025, title:"Roasting Warehouse South Fremantle"},
-  {lat:-32.0960881, lng:115.8763895, title:"Robert J Cross Park"},
-  {lat:-31.9844149, lng:115.903304, title:"RoyAl's Chicken and Burgers"},
-  {lat:-31.94589306283747, lng:115.85541117468647, title:"Russell Square"},
-  {lat:-31.98052509999999, lng:115.8622392, title:"Secret Garden Cafe & Patisserie"},
-  {lat:-32.402723, lng:116.1009972, title:"Serpentine Dam"},
-  {lat:-32.1457793, lng:116.0509806, title:"Settlers' Common"},
-  {lat:-31.97497779999999, lng:115.7834981, title:"Showgrounds Exhibition Centre"},
-  {lat:-31.8244632, lng:115.7412731, title:"Sorrento Quay"},
-  {lat:-32.277192, lng:115.720341, title:"Spill the Beans @ Palm Beach Jetty"},
-  {lat:-32.0788389, lng:115.8431026, title:"Starbucks Murdoch"},
-  {lat:-32.1161828, lng:115.9159192, title:"Starbucks Piara Waters"},
-  {lat:-31.9584182, lng:115.8598824, title:"Supreme Court Gardens"},
-  {lat:-31.973136171539213, lng:116.05828323917477, title:"Taco Maria"},
-  {lat:-32.6245341, lng:115.6408015, title:"The Leprechaun Cafe and Takeaway & Dawesville Foreshore Reserve"},
-  {lat:-31.94579589532917, lng:115.86114361218638, title:"The Moon"},
-  {lat:-32.02734, lng:115.79505, title:"The Neighbourhood Kitchen, Coffee & Bottle Shop"},
-  {lat:-32.090336, lng:115.941107, title:"The Roastery"},
-  {lat:-29.7966703, lng:30.7667241, title:"The Round House"},
-  {lat:-32.0554899, lng:115.9625293, title:"Thornlie Kebabs"},
-  {lat:-31.9721694, lng:115.8949625, title:"Turkish Oven And Hand Made Pizza"},
-  {lat:-31.94846946989455, lng:115.859491575687, title:"Universal Bar"},
-  {lat:-31.9495403, lng:115.8618542, title:"WA Museum Boola Bardip"},
-  {lat:-32.0122168, lng:115.7876885, title:"Walters River Café"},
-  {lat:-32.0476894, lng:115.7540023, title:"Walyalup Fremantle Arts Centre"},
-  {lat:-31.7019674, lng:116.1013601, title:"Walyunga Scenic Lookout"},
-  {lat:-31.717708, lng:115.778525, title:"Wanneroo Botanic Gardens Mini Golf"},
-  {lat:-31.9480076, lng:115.8601397, title:"Whisk Creamery"},
-  {lat:-31.96713829999999, lng:115.8169745, title:"Xpresso Code"},
-  {lat:-31.5499347, lng:115.6241774, title:"Yanchep Lagoon"},
-  {lat:-31.90525794878862, lng:116.76271889145113, title:"York Canola Fields"},
-  {lat:-31.946821101184497, lng:115.8294017986926, title:"Yours Truly"},
-  {lat:-32.0355268, lng:116.1059094, title:"Yvette's Place"}
-  ];
+function initMap() {
+  map = new google.maps.Map(document.getElementById("map"), {
+    center: { lat: -31.9523, lng: 115.8613 },
+    zoom: 12,
+    styles: [
+      {"featureType":"all","elementType":"labels","stylers":[{"visibility":"off"}]},
+      {"featureType":"poi.park","elementType":"geometry.fill","stylers":[{"color":"#aadd55"}]},
+      {"featureType":"road.highway","elementType":"labels","stylers":[{"visibility":"off"},{"hue":"#ff0000"}]},
+      {"featureType":"road.arterial","elementType":"labels.text","stylers":[{"visibility":"on"}]},
+      {"featureType":"road.local","elementType":"labels.text","stylers":[{"visibility":"on"}]},
+      {"featureType":"water","elementType":"geometry.fill","stylers":[{"color":"#0099dd"}]}
+    ]
+  });
 
-  function initMap() {
-    map = new google.maps.Map(document.getElementById("map"), {
-      center: { lat: -31.9523, lng: 115.8613 },
-      zoom: 12,
-      styles: [
-        {"featureType":"all","elementType":"labels","stylers":[{"visibility":"off"}]},
-        {"featureType":"poi.park","elementType":"geometry.fill","stylers":[{"color":"#aadd55"}]},
-        {"featureType":"road.highway","elementType":"labels","stylers":[{"visibility":"off"},{"hue":"#ff0000"}]},
-        {"featureType":"road.arterial","elementType":"labels.text","stylers":[{"visibility":"on"}]},
-        {"featureType":"road.local","elementType":"labels.text","stylers":[{"visibility":"on"}]},
-        {"featureType":"water","elementType":"geometry.fill","stylers":[{"color":"#0099dd"}]}
-      ]
+  loadPlaces();
+}
+
+// Fetch places from Google Sheets
+async function loadPlaces() {
+  const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSfGFuqglhR7Ss03-SJVzB_St46vLigoCEj6MOmJmSBsqg2SD0ebiTRt49IZ6jJnhYPlZtVBVpvX8ZG/pub?output=csv"; // Replace with your Sheet ID
+  const res = await fetch(sheetURL);
+  const text = await res.text();
+  const rows = text.split("\n").slice(1); // skip header
+
+  const places = rows.map(row => {
+    const [title, lat, lng] = row.split(",");
+    return { title, lat: parseFloat(lat), lng: parseFloat(lng) };
+  });
+
+  const listContainer = document.getElementById("places-list");
+
+  places.forEach((place, index) => {
+    // Add marker
+    new google.maps.Marker({
+      position: {lat: place.lat, lng: place.lng},
+      map: map,
+      label: { text: (index + 1).toString(), color: "white", fontWeight: "bold" },
+      title: place.title
     });
 
-    // Add numbered markers
-    places.forEach((place, index) => {
-      new google.maps.Marker({
-        position: {lat: place.lat, lng: place.lng},
-        map: map,
-        label: { text: (index+1).toString(), color: "white", fontWeight: "bold" },
-        title: place.title
-      });
-    });
-
-    // Build clickable list
-    const listContainer = document.getElementById("places-list");
-    places.forEach((place, index) => {
-      const div = document.createElement("div");
-      div.className = "place";
-      div.innerHTML = `<span class="place-number">${index+1}</span>${place.title}`;
-      div.onclick = () => {
-        map.setCenter({lat: place.lat, lng: place.lng});
-        map.setZoom(16);
-      };
-      listContainer.appendChild(div);
-    });
-  }
+    // Add clickable list item
+    const div = document.createElement("div");
+    div.className = "place";
+    div.innerHTML = `<span class="place-number">${index + 1}</span>${place.title}`;
+    div.onclick = () => {
+      map.setCenter({lat: place.lat, lng: place.lng});
+      map.setZoom(16);
+    };
+    listContainer.appendChild(div);
+  });
+}
 </script>
 
 <script async
-  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAVImtk_O82lOoIWlJGkYM_sMw0oAYZIhQ&callback=initMap">
+  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBdpysexDpYqUB9hUcHukcJnzNx7bAhtW8&callback=initMap">
 </script>
 
 </body>
