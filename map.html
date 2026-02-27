@@ -214,27 +214,38 @@ function addPlaces(places) {
 
     // Arrow toggles children
     if(!place.Parent && childrenMap[place.Name] && childrenMap[place.Name].length > 0){
-      placeDiv.addEventListener("click", (e)=>{
-        if(e.target.classList.contains("place-name")) return;
-        placeDiv.classList.toggle("expanded");
-        childrenMap[place.Name].forEach(c=>{
-          const childDiv = document.createElement("div");
-          childDiv.className = "place child";
-          childDiv.innerHTML = c.Name;
-          placeDiv.after(childDiv);
-          childDiv.style.display = placeDiv.classList.contains("expanded") ? "block" : "none";
-          // Optional: click child scroll to map of parent
-          childDiv.addEventListener("click", ()=>{
-            document.getElementById("map").scrollIntoView({ behavior: "smooth" });
-            map.setCenter({ lat: place.Lat, lng: place.Lng });
-            map.setZoom(16);
-            infoWindow.setContent(`<strong>${c.Name}</strong>`);
-            infoWindow.open(map, marker);
-            highlightList(index);
-          });
+  placeDiv.addEventListener("click", (e)=>{
+    if(e.target.classList.contains("place-name")) return;
+
+    // Toggle expanded class
+    placeDiv.classList.toggle("expanded");
+
+    // Create children divs only if not already created
+    if(!placeDiv.childElements) {
+      placeDiv.childElements = [];
+      childrenMap[place.Name].forEach(c=>{
+        const childDiv = document.createElement("div");
+        childDiv.className = "place child";
+        childDiv.innerHTML = c.Name;
+        placeDiv.after(childDiv);
+        placeDiv.childElements.push(childDiv);
+
+        // Click child scrolls to map and opens parent's marker info
+        childDiv.addEventListener("click", ()=>{
+          document.getElementById("map").scrollIntoView({ behavior: "smooth" });
+          map.setCenter({ lat: place.Lat, lng: place.Lng });
+          map.setZoom(16);
+          infoWindow.setContent(`<strong>${c.Name}</strong>`);
+          infoWindow.open(map, marker);
+          highlightList(index);
         });
       });
     }
+
+    // Toggle display of child elements
+    placeDiv.childElements.forEach(div=>{
+      div.style.display = placeDiv.classList.contains("expanded") ? "block" : "none";
+    });
   });
 }
 
@@ -252,3 +263,4 @@ src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAVImtk_O82lOoIWlJGkYM_sMw
 
 </body>
 </html>
+
