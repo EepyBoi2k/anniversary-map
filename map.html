@@ -44,67 +44,36 @@ h1 {
   display: flex;
   align-items: center;
 }
-.place:hover {
-  background: #F1ECE6;
-}
-.place.selected {
-  background: #EAD9D1;
-}
-.place-number {
-  color: #9C6B5C;
-  font-weight: 600;
-  margin-right: 10px;
-  min-width: 20px;
-}
-.place.child {
-  padding-left: 30px;
-  display: none; /* start hidden */
-}
-.place.parent::after {
-  content: "▼";
-  margin-left: auto;
-  font-size: 12px;
-  transform: rotate(0deg);
-  transition: transform 0.2s ease;
-}
-.place.parent.expanded::after {
-  transform: rotate(-180deg);
-}
-footer {
-  text-align: center;
-  margin-top: 60px;
-  font-size: 14px;
-  color: #8A8A8A;
-}
+.place:hover { background: #F1ECE6; }
+.place.selected { background: #EAD9D1; }
+.place-number { color: #9C6B5C; font-weight: 600; margin-right: 10px; min-width: 20px; }
+.place.child { padding-left: 30px; display: none; }
+.place.parent::after { content: "▼"; margin-left: auto; font-size: 12px; transform: rotate(0deg); transition: transform 0.2s ease; }
+.place.parent.expanded::after { transform: rotate(-180deg); }
+footer { text-align: center; margin-top: 60px; font-size: 14px; color: #8A8A8A; }
 </style>
 </head>
 <body>
 
 <script>
-  let password = prompt("Enter the password to view the map:");
-  if(password !== "march18") {
-    document.body.innerHTML = "<h2 style='text-align:center;margin-top:50px;'>Access Denied</h2>";
-    throw "Wrong password";
-  }
+let password = prompt("Enter the password to view the map:");
+if(password !== "march18") {
+  document.body.innerHTML = "<h2 style='text-align:center;margin-top:50px;'>Access Denied</h2>";
+  throw "Wrong password";
+}
 </script>
 
 <div class="container">
   <h1>Just The Two Of Us</h1>
-
   <div id="map"></div>
-
   <div id="places-list"></div>
-
   <footer>Built quietly over two years.</footer>
 </div>
 
-<!-- Load PapaParse for CSV parsing -->
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 
 <script>
-let map;
-let markers = [];
-let infoWindow;
+let map, markers = [], infoWindow;
 
 function initMap() {
   map = new google.maps.Map(document.getElementById("map"), {
@@ -122,27 +91,37 @@ function initMap() {
 
   infoWindow = new google.maps.InfoWindow();
 
+  // Load CSV
   Papa.parse('https://docs.google.com/spreadsheets/d/e/2PACX-1vSfGFuqglhR7Ss03-SJVzB_St46vLigoCEj6MOmJmSBsqg2SD0ebiTRt49IZ6jJnhYPlZtVBVpvX8ZG/pub?output=csv', {
     download: true,
     header: true,
     skipEmptyLines: true,
     complete: function(results) {
-      addPlaces(results.data);
+      const data = results.data.map(row => {
+        // Normalize headers
+        return {
+          Name: row.Name || row.name || row.Place || row.place || "Unnamed",
+          Lat: parseFloat(row.Lat || row.lat),
+          Lng: parseFloat(row.Lng || row.lng),
+          Parent: row.Parent || row.parent || ""
+        };
+      });
+      addPlaces(data);
     }
   });
 }
 
 function addPlaces(places) {
   const listDiv = document.getElementById("places-list");
-  const parentMap = {}; // parent name -> div element
+  const parentMap = {}; // track parents with children
+
+  // Determine which names are parents
+  const hasChildren = {};
+  places.forEach(p => { if(p.Parent) hasChildren[p.Parent] = true; });
 
   places.forEach((place, index) => {
-    const lat = parseFloat(place.Lat);
-    const lng = parseFloat(place.Lng);
-    const parent = place.Parent || "";
-
     const marker = new google.maps.Marker({
-      position: { lat, lng },
+      position: { lat: place.Lat, lng: place.Lng },
       map: map,
       label: { text: String(index+1), color: "#ffffff" },
       title: place.Name
@@ -157,29 +136,31 @@ function addPlaces(places) {
     markers.push(marker);
 
     const placeDiv = document.createElement("div");
-    placeDiv.className = "place" + (parent ? " child" : " parent");
+    placeDiv.className = "place" + (place.Parent ? " child" : " parent");
     placeDiv.innerHTML = `<span class="place-number">${index+1}</span>${place.Name}`;
+
+    // Mark child-parent relationship
+    if(place.Parent) placeDiv.dataset.parent = place.Parent;
 
     placeDiv.addEventListener("click", () => {
       document.getElementById("map").scrollIntoView({behavior: "smooth"});
-      map.setCenter({ lat, lng });
+      map.setCenter({ lat: place.Lat, lng: place.Lng });
       map.setZoom(16);
       infoWindow.setContent(`<strong>${place.Name}</strong>`);
       infoWindow.open(map, marker);
       highlightList(index);
 
-      // Toggle children if parent
-      if(placeDiv.classList.contains("parent") && !parent) {
+      // Toggle children only for parents that actually have children
+      if(!place.Parent && hasChildren[place.Name]) {
         placeDiv.classList.toggle("expanded");
         const children = Array.from(listDiv.querySelectorAll(`.child[data-parent="${place.Name}"]`));
         children.forEach(c => c.style.display = c.style.display === "block" ? "none" : "block");
       }
     });
 
-    if(parent) {
-      placeDiv.dataset.parent = parent;
-      const parentDiv = parentMap[parent];
-      if(parentDiv) parentDiv.after(placeDiv); // insert after parent
+    if(place.Parent) {
+      const parentDiv = parentMap[place.Parent];
+      if(parentDiv) parentDiv.after(placeDiv);
     } else {
       listDiv.appendChild(placeDiv);
       parentMap[place.Name] = placeDiv;
