@@ -182,9 +182,25 @@ document.addEventListener("DOMContentLoaded", function() {
         `;
         parentMap[place.Name] = placeDiv;
 
-        if(childrenMap[place.Name] && childrenMap[place.Name].length > 0){
-          placeDiv.classList.add("has-children");
-        }
+        if(childrenMap[place.Name]){
+  // Sort children alphabetically BEFORE creating child divs
+  childrenMap[place.Name].sort((a,b) => a.Name.localeCompare(b.Name));
+
+  placeDiv.classList.toggle("expanded");
+  placeDiv.childElements = placeDiv.childElements || [];
+  if(placeDiv.childElements.length === 0){
+    childrenMap[place.Name].forEach(c=>{
+      const childDiv = document.createElement("div");
+      childDiv.className = "place child";
+      childDiv.innerHTML = c.Name;
+      placeDiv.after(childDiv);
+      placeDiv.childElements.push(childDiv);
+    });
+  }
+  placeDiv.childElements.forEach(div=>{
+    div.style.display = placeDiv.classList.contains("expanded") ? "block" : "none";
+  });
+}
       } else {
         placeDiv.classList.add("child");
         placeDiv.innerHTML = place.Name;
@@ -246,3 +262,4 @@ src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAVImtk_O82lOoIWlJGkYM_sMw
 
 </body>
 </html>
+
