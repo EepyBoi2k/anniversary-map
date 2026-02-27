@@ -146,19 +146,25 @@ function addPlaces(places) {
   const childrenMap = {};
   let parentCounter = 1;
 
-  places.forEach((place, index) => {
-    place.index = index;
+  // First pass: organize children
+  places.forEach(place => {
+    if(place.Parent){
+      if(!childrenMap[place.Parent]) childrenMap[place.Parent] = [];
+      childrenMap[place.Parent].push(place);
+    }
+  });
 
-    // Marker only for parents
+  // Second pass: create elements
+  places.forEach((place, index) => {
     let markerLabel = "";
-    if (!place.Parent) {
+    if(!place.Parent){
       markerLabel = String(parentCounter);
       parentCounter++;
     }
 
     const marker = new google.maps.Marker({
       position: { lat: place.Lat, lng: place.Lng },
-      map: map,
+      map: !place.Parent ? map : null,
       label: markerLabel ? { text: markerLabel, color: "#ffffff" } : null,
       title: place.Name
     });
@@ -171,26 +177,25 @@ function addPlaces(places) {
 
     markers.push(marker);
 
-    // Create div
     const placeDiv = document.createElement("div");
     placeDiv.className = "place";
 
-    if(!place.Parent) {
+    if(!place.Parent){
       placeDiv.classList.add("parent");
       placeDiv.innerHTML = `
         <span class="place-number">${markerLabel}</span>
         <span class="place-name">${place.Name}</span>
       `;
       parentMap[place.Name] = placeDiv;
+
+      // Add arrow if parent has children
+      if(childrenMap[place.Name] && childrenMap[place.Name].length > 0){
+        placeDiv.classList.add("has-children");
+      }
     } else {
       placeDiv.classList.add("child");
       placeDiv.innerHTML = place.Name;
-      if(!childrenMap[place.Parent]) childrenMap[place.Parent] = [];
-      childrenMap[place.Parent].push(placeDiv);
     }
-
-    // Add "has-children" if parent has children
-    if(childrenMap[place.Name]) placeDiv.classList.add("has-children");
 
     listDiv.appendChild(placeDiv);
 
@@ -199,7 +204,7 @@ function addPlaces(places) {
     if(nameSpan){
       nameSpan.addEventListener("click", () => {
         document.getElementById("map").scrollIntoView({ behavior: "smooth" });
-        map.setCenter({ lat: place.Lat, lng: place.Lng });
+        if(marker.getMap()) map.setCenter({ lat: place.Lat, lng: place.Lng });
         map.setZoom(16);
         infoWindow.setContent(`<strong>${place.Name}</strong>`);
         infoWindow.open(map, marker);
@@ -208,20 +213,27 @@ function addPlaces(places) {
     }
 
     // Arrow toggles children
-    if(!place.Parent && childrenMap[place.Name]){
+    if(!place.Parent && childrenMap[place.Name] && childrenMap[place.Name].length > 0){
       placeDiv.addEventListener("click", (e)=>{
         if(e.target.classList.contains("place-name")) return;
         placeDiv.classList.toggle("expanded");
-        childrenMap[place.Name].forEach(c => c.style.display = c.style.display==="block"?"none":"block");
+        childrenMap[place.Name].forEach(c=>{
+          const childDiv = document.createElement("div");
+          childDiv.className = "place child";
+          childDiv.innerHTML = c.Name;
+          placeDiv.after(childDiv);
+          childDiv.style.display = placeDiv.classList.contains("expanded") ? "block" : "none";
+          // Optional: click child scroll to map of parent
+          childDiv.addEventListener("click", ()=>{
+            document.getElementById("map").scrollIntoView({ behavior: "smooth" });
+            map.setCenter({ lat: place.Lat, lng: place.Lng });
+            map.setZoom(16);
+            infoWindow.setContent(`<strong>${c.Name}</strong>`);
+            infoWindow.open(map, marker);
+            highlightList(index);
+          });
+        });
       });
-    }
-  });
-
-  // Append children under parents
-  Object.keys(childrenMap).forEach(parentName => {
-    const parentDiv = parentMap[parentName];
-    if(parentDiv) {
-      childrenMap[parentName].forEach(childDiv => parentDiv.after(childDiv));
     }
   });
 }
@@ -240,4 +252,3 @@ src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAVImtk_O82lOoIWlJGkYM_sMw
 
 </body>
 </html>
-
