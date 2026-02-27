@@ -13,11 +13,13 @@ body {
   color: #2E2E2E;
   scroll-behavior: smooth;
 }
+
 .container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 40px 20px;
 }
+
 h1 {
   font-family: 'Playfair Display', serif;
   text-align: center;
@@ -25,6 +27,7 @@ h1 {
   margin-bottom: 40px;
   color: #8B5E3C;
 }
+
 #map {
   width: 100%;
   height: 500px;
@@ -33,11 +36,14 @@ h1 {
   margin-bottom: 50px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
+
+/* Grid layout for the places list */
 #places-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 16px;
 }
+
 .place.parent { 
   padding: 14px 16px;
   border-radius: 10px;
@@ -49,10 +55,12 @@ h1 {
   width: 100%;
   position: relative;
 }
+
 .place.parent:hover { 
   background: #F1E8DF;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
+
 .place-number { 
   color: #9C6B5C; 
   font-weight: 600; 
@@ -60,6 +68,7 @@ h1 {
   min-width: 20px; 
   display: inline-block;
 }
+
 .children-container {
   margin-top: 6px;
   display: none;
@@ -67,6 +76,7 @@ h1 {
   gap: 2px;
   margin-left: 12px;
 }
+
 .place.child {
   padding: 4px 12px;
   font-size: 0.95em;
@@ -74,11 +84,12 @@ h1 {
   background: #FAF5F0;
   border-radius: 6px;
 }
+
+/* Toggle button fixed at top-right */
 .toggle-btn {
   position: absolute;
-  right: 16px;
-  top: 50%;
-  transform: translateY(-50%);
+  right: 10px;
+  top: 10px;
   background: #D8CFC6;
   border: none;
   border-radius: 50%;
@@ -88,7 +99,10 @@ h1 {
   font-weight: bold;
   color: #8B5E3C;
 }
-.toggle-btn:hover { background: #C5B2A0; }
+.toggle-btn:hover { 
+  background: #C5B2A0; 
+}
+
 footer { 
   text-align: center; 
   margin-top: 60px; 
@@ -236,20 +250,11 @@ document.addEventListener("DOMContentLoaded", function() {
                 const childrenNames = childrenMap[place.Name] ? childrenMap[place.Name].map(c => c.Name).join("<br>") : "";
                 infoWindow.setContent(`<strong>${place.Name}</strong>${childrenNames ? "<br>" + childrenNames : ""}`);
                 infoWindow.open(map, marker);
-
-                highlightList(parentDiv);
             });
 
             listDiv.appendChild(parentDiv);
         }
     });
-  }
-
-  function highlightList(selectedDiv) {
-    document.querySelectorAll("#places-list .place").forEach(div=>{
-      div.classList.remove("selected");
-    });
-    selectedDiv.classList.add("selected");
   }
 
   window.initMap = initMap;
