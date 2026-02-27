@@ -130,10 +130,10 @@ document.addEventListener("DOMContentLoaded", function() {
       skipEmptyLines: true,
       complete: function(results) {
         const data = results.data.map(row => ({
-          Name: row.Name || row.name || row.Place || row.place || "Unnamed",
+          Name: row.Name ? row.Name.trim() : "Unnamed",
           Lat: parseFloat(row.Lat || row.lat),
           Lng: parseFloat(row.Lng || row.lng),
-          Parent: row.Parent || row.parent || ""
+          Parent: row.Parent ? row.Parent.trim() : ""
         }));
         addPlaces(data);
       }
@@ -147,71 +147,72 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Organize children under their parent
     places.forEach(place => {
-      if(place.Parent){
-        if(!childrenMap[place.Parent]) childrenMap[place.Parent] = [];
-        childrenMap[place.Parent].push(place);
-      }
+        if(place.Parent){
+            if(!childrenMap[place.Parent]) childrenMap[place.Parent] = [];
+            childrenMap[place.Parent].push(place);
+        }
     });
 
     // Sort children alphabetically
     for(let p in childrenMap){
-      childrenMap[p].sort((a,b) => a.Name.localeCompare(b.Name));
+        childrenMap[p].sort((a,b) => a.Name.localeCompare(b.Name));
     }
 
     // Add parents and children
     places.forEach(place => {
-      if(!place.Parent){
-        const markerLabel = String(parentCounter++);
-        const marker = new google.maps.Marker({
-          position: { lat: place.Lat, lng: place.Lng },
-          map: map,
-          label: { text: markerLabel, color: "#ffffff" },
-          title: place.Name
-        });
-        markers.push(marker);
+        if(!place.Parent){ // only top-level parents
+            const markerLabel = String(parentCounter++);
+            const marker = new google.maps.Marker({
+                position: { lat: place.Lat, lng: place.Lng },
+                map: map,
+                label: { text: markerLabel, color: "#ffffff" },
+                title: place.Name
+            });
+            markers.push(marker);
 
-        const parentDiv = document.createElement("div");
-        parentDiv.className = "place parent";
-        parentDiv.innerHTML = `<span class="place-number">${markerLabel}</span><span class="place-name">${place.Name}</span>`;
-        if(childrenMap[place.Name]) parentDiv.classList.add("has-children");
+            const parentDiv = document.createElement("div");
+            parentDiv.className = "place parent";
+            parentDiv.innerHTML = `<span class="place-number">${markerLabel}</span><span class="place-name">${place.Name}</span>`;
+            
+            // Add children container if there are children
+            if(childrenMap[place.Name]){
+                parentDiv.classList.add("has-children");
+                const childrenContainer = document.createElement("div");
+                childrenContainer.className = "children-container";
 
-        // Add children container
-        if(childrenMap[place.Name]){
-          const childrenContainer = document.createElement("div");
-          childrenContainer.className = "children-container";
-          childrenMap[place.Name].forEach(c=>{
-            const childDiv = document.createElement("div");
-            childDiv.className = "place child";
-            childDiv.textContent = c.Name;
-            childrenContainer.appendChild(childDiv);
-          });
-          parentDiv.appendChild(childrenContainer);
+                childrenMap[place.Name].forEach(c=>{
+                    const childDiv = document.createElement("div");
+                    childDiv.className = "place child";
+                    childDiv.textContent = c.Name;
+                    childrenContainer.appendChild(childDiv);
+                });
+                parentDiv.appendChild(childrenContainer);
+            }
+
+            // Click handler
+            parentDiv.addEventListener("click", e=>{
+                if(e.target.classList.contains("place-name")) {
+                    document.getElementById("map").scrollIntoView({ behavior: "smooth" });
+                    map.setCenter({ lat: place.Lat, lng: place.Lng });
+                    map.setZoom(16);
+
+                    const childrenNames = childrenMap[place.Name] ? childrenMap[place.Name].map(c => c.Name).join("<br>") : "";
+                    infoWindow.setContent(`<strong>${place.Name}</strong>${childrenNames ? "<br>" + childrenNames : ""}`);
+                    infoWindow.open(map, marker);
+
+                    highlightList(parentDiv);
+                }
+
+                // Toggle children visibility
+                if(childrenMap[place.Name]){
+                    const container = parentDiv.querySelector(".children-container");
+                    container.style.display = container.style.display === "block" ? "none" : "block";
+                    parentDiv.classList.toggle("expanded");
+                }
+            });
+
+            listDiv.appendChild(parentDiv);
         }
-
-        // Click handler
-        parentDiv.addEventListener("click", e=>{
-          if(e.target.classList.contains("place-name")) {
-            document.getElementById("map").scrollIntoView({ behavior: "smooth" });
-            map.setCenter({ lat: place.Lat, lng: place.Lng });
-            map.setZoom(16);
-
-            const childrenNames = childrenMap[place.Name] ? childrenMap[place.Name].map(c => c.Name).join("<br>") : "";
-            infoWindow.setContent(`<strong>${place.Name}</strong>${childrenNames ? "<br>" + childrenNames : ""}`);
-            infoWindow.open(map, marker);
-
-            highlightList(parentDiv);
-          }
-
-          // Toggle children visibility
-          if(childrenMap[place.Name]){
-            const container = parentDiv.querySelector(".children-container");
-            container.style.display = container.style.display === "block" ? "none" : "block";
-            parentDiv.classList.toggle("expanded");
-          }
-        });
-
-        listDiv.appendChild(parentDiv);
-      }
     });
   }
 
