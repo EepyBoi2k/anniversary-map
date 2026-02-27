@@ -37,13 +37,14 @@ h1 {
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
-/* Grid layout for the places list */
+/* 4-column grid for places */
 #places-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 16px;
 }
 
+/* Parent place box */
 .place.parent { 
   padding: 14px 16px;
   border-radius: 10px;
@@ -51,9 +52,11 @@ h1 {
   border: 1px solid #D8CFC6;
   transition: background 0.2s ease, box-shadow 0.2s ease;
   cursor: pointer;
-  display: block;
-  width: 100%;
+  display: flex;
+  flex-direction: column;
   position: relative;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .place.parent:hover { 
@@ -65,8 +68,6 @@ h1 {
   color: #9C6B5C; 
   font-weight: 600; 
   margin-right: 6px; 
-  min-width: 20px; 
-  display: inline-block;
 }
 
 .children-container {
@@ -241,7 +242,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 parentDiv.appendChild(toggleBtn);
             }
 
-            // Click parent block (without toggling children)
+            // Click parent block
             parentDiv.addEventListener("click", () => {
                 document.getElementById("map").scrollIntoView({ behavior: "smooth" });
                 map.setCenter({ lat: place.Lat, lng: place.Lng });
