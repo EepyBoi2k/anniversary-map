@@ -90,16 +90,20 @@ footer { text-align: center; margin-top: 60px; font-size: 14px; color: #8A8A8A; 
 <script>
 let password = prompt("Enter the password to view the map:");
 if(password !== "march18") {
-  document.body.innerHTML = "<h2 style='text-align:center;margin-top:50px;'>Access Denied</h2>";
-  throw "Wrong password";
+    document.body.innerHTML = "<h2 style='text-align:center;margin-top:50px;'>Access Denied</h2>";
+} else {
+    document.getElementById("main-content").style.display = "block";
 }
 </script>
 
-<div class="container">
-  <h1>Just The Two Of Us</h1>
-  <div id="map"></div>
-  <div id="places-list"></div>
-  <footer>Built quietly over two years.</footer>
+<!-- Wrap everything in main-content div -->
+<div id="main-content" style="display:none">
+  <div class="container">
+    <h1>Just The Two Of Us</h1>
+    <div id="map"></div>
+    <div id="places-list"></div>
+    <footer>Built quietly over two years.</footer>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
@@ -232,7 +236,6 @@ function addPlaces(places) {
           });
         }
 
-        // Toggle visibility
         placeDiv.childElements.forEach(div=>{
           div.style.display = placeDiv.classList.contains("expanded") ? "block" : "none";
         });
