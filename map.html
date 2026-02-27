@@ -72,7 +72,7 @@ footer {
 </script>
 
 <div class="container">
-  <h1>Two Years With You</h1>
+  <h1>Just The Two Of Us</h1>
 
   <div id="map"></div>
 
@@ -84,6 +84,7 @@ footer {
 <script>
 let map;
 let markers = [];
+let infoWindow;
 
 // Initialize the Google Map
 function initMap() {
@@ -99,6 +100,8 @@ function initMap() {
       {"featureType":"water","elementType":"geometry.fill","stylers":[{"color":"#0099dd"}]}
     ]
   });
+
+  infoWindow = new google.maps.InfoWindow();
 
   // Load places from Google Sheet CSV
   fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vSfGFuqglhR7Ss03-SJVzB_St46vLigoCEj6MOmJmSBsqg2SD0ebiTRt49IZ6jJnhYPlZtVBVpvX8ZG/pub?output=csv')
@@ -123,6 +126,13 @@ function addPlaces(places) {
       label: { text: String(index+1), color: "#ffffff" },
       title: place.title
     });
+
+    // Show info window on marker click
+    marker.addListener("click", () => {
+      infoWindow.setContent(`<strong>${place.title}</strong>`);
+      infoWindow.open(map, marker);
+    });
+
     markers.push(marker);
 
     // List item
@@ -132,6 +142,8 @@ function addPlaces(places) {
     placeDiv.addEventListener("click", () => {
       map.setCenter({ lat: place.lat, lng: place.lng });
       map.setZoom(16);
+      infoWindow.setContent(`<strong>${place.title}</strong>`);
+      infoWindow.open(map, marker);
     });
     listDiv.appendChild(placeDiv);
   });
