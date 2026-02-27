@@ -31,15 +31,12 @@ h1 {
   overflow: hidden;
   margin-bottom: 50px;
 }
-/* Balanced 4-column layout for parents and children */
 #places-list {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 10px 20px;
 }
 .place.parent { 
-  display: flex;
-  align-items: center;
   cursor: pointer;
   padding: 12px 14px;
   border-bottom: 1px solid #D8CFC6;
@@ -48,7 +45,6 @@ h1 {
 }
 .place.parent:hover { background: #F1ECE6; }
 .place.parent.selected { background: #EAD9D1; }
-
 .place-number { 
   color: #9C6B5C; 
   font-weight: 600; 
@@ -58,7 +54,6 @@ h1 {
 }
 .place-name { 
   flex: 1; 
-  cursor: pointer; 
 }
 .place.parent.has-children::after {
   content: "▼";
@@ -71,17 +66,19 @@ h1 {
 .place.parent.has-children.expanded::after {
   transform: rotate(-180deg);
 }
-.place.child {
-  display: block;
-  padding-left: 30px;
-  grid-column: 1 / -1;
+.children-container {
+  display: none;
+  margin-top: 6px;
+  margin-left: 30px;
   background: #f8f5f2;
-  border-left: 2px solid #D8CFC6;
   border-radius: 0 8px 8px 0;
-  margin-bottom: 4px;
-  cursor: default;
-  color: #6E6E6E;
+  padding: 4px 0;
+}
+.place.child {
+  padding: 4px 10px;
   font-size: 0.95em;
+  color: #6E6E6E;
+  cursor: default;
 }
 footer { text-align: center; margin-top: 60px; font-size: 14px; color: #8A8A8A; }
 </style>
@@ -145,7 +142,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
   function addPlaces(places) {
     const listDiv = document.getElementById("places-list");
-    const parentMap = {};
     const childrenMap = {};
     let parentCounter = 1;
 
@@ -162,12 +158,10 @@ document.addEventListener("DOMContentLoaded", function() {
       childrenMap[p].sort((a,b) => a.Name.localeCompare(b.Name));
     }
 
-    // Create parent and child list in balanced columns
+    // Add parents and children
     places.forEach(place => {
       if(!place.Parent){
-        const markerLabel = String(parentCounter);
-        parentCounter++;
-
+        const markerLabel = String(parentCounter++);
         const marker = new google.maps.Marker({
           position: { lat: place.Lat, lng: place.Lng },
           map: map,
@@ -176,28 +170,26 @@ document.addEventListener("DOMContentLoaded", function() {
         });
         markers.push(marker);
 
-        const placeDiv = document.createElement("div");
-        placeDiv.className = "place parent";
-        placeDiv.innerHTML = `<span class="place-number">${markerLabel}</span><span class="place-name">${place.Name}</span>`;
+        const parentDiv = document.createElement("div");
+        parentDiv.className = "place parent";
+        parentDiv.innerHTML = `<span class="place-number">${markerLabel}</span><span class="place-name">${place.Name}</span>`;
+        if(childrenMap[place.Name]) parentDiv.classList.add("has-children");
 
-        if(childrenMap[place.Name] && childrenMap[place.Name].length > 0){
-          placeDiv.classList.add("has-children");
-        }
-
-        // Add children directly below parent
+        // Add children container
         if(childrenMap[place.Name]){
-          placeDiv.childElements = [];
+          const childrenContainer = document.createElement("div");
+          childrenContainer.className = "children-container";
           childrenMap[place.Name].forEach(c=>{
             const childDiv = document.createElement("div");
             childDiv.className = "place child";
-            childDiv.innerHTML = c.Name;
-            placeDiv.childElements.push(childDiv);
-            placeDiv.after(childDiv);
-            childDiv.style.display = "none";
+            childDiv.textContent = c.Name;
+            childrenContainer.appendChild(childDiv);
           });
+          parentDiv.appendChild(childrenContainer);
         }
 
-        placeDiv.addEventListener("click", e=>{
+        // Click handler
+        parentDiv.addEventListener("click", e=>{
           if(e.target.classList.contains("place-name")) {
             document.getElementById("map").scrollIntoView({ behavior: "smooth" });
             map.setCenter({ lat: place.Lat, lng: place.Lng });
@@ -207,18 +199,18 @@ document.addEventListener("DOMContentLoaded", function() {
             infoWindow.setContent(`<strong>${place.Name}</strong>${childrenNames ? "<br>" + childrenNames : ""}`);
             infoWindow.open(map, marker);
 
-            highlightList(placeDiv);
+            highlightList(parentDiv);
           }
 
+          // Toggle children visibility
           if(childrenMap[place.Name]){
-            placeDiv.classList.toggle("expanded");
-            placeDiv.childElements.forEach(div=>{
-              div.style.display = placeDiv.classList.contains("expanded") ? "block" : "none";
-            });
+            const container = parentDiv.querySelector(".children-container");
+            container.style.display = container.style.display === "block" ? "none" : "block";
+            parentDiv.classList.toggle("expanded");
           }
         });
 
-        listDiv.appendChild(placeDiv);
+        listDiv.appendChild(parentDiv);
       }
     });
   }
