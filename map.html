@@ -87,7 +87,6 @@ footer { text-align: center; margin-top: 60px; font-size: 14px; color: #8A8A8A; 
 </head>
 <body>
 
-<!-- Wrap everything in main-content div -->
 <div id="main-content" style="display:none">
   <div class="container">
     <h1>Just The Two Of Us</h1>
@@ -149,6 +148,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const childrenMap = {};
     let parentCounter = 1;
 
+    // Organize children under their parent
     places.forEach(place => {
       if(place.Parent){
         if(!childrenMap[place.Parent]) childrenMap[place.Parent] = [];
@@ -173,7 +173,7 @@ document.addEventListener("DOMContentLoaded", function() {
       marker.addListener("click", () => {
         infoWindow.setContent(`<strong>${place.Name}</strong>`);
         infoWindow.open(map, marker);
-        highlightList(index);
+        highlightList(index, place.Parent ? true : false);
       });
 
       markers.push(marker);
@@ -207,34 +207,34 @@ document.addEventListener("DOMContentLoaded", function() {
           map.setZoom(16);
           infoWindow.setContent(`<strong>${place.Name}</strong>`);
           infoWindow.open(map, marker);
-          highlightList(index);
+          highlightList(index, place.Parent ? true : false);
         });
       }
 
+      // Handle children
       if(!place.Parent && childrenMap[place.Name] && childrenMap[place.Name].length > 0){
-        // Sort children alphabetically
         childrenMap[place.Name].sort((a,b)=> a.Name.localeCompare(b.Name));
-
         placeDiv.addEventListener("click", (e)=>{
           if(e.target.classList.contains("place-name")) return;
           placeDiv.classList.toggle("expanded");
 
           if(!placeDiv.childElements){
             placeDiv.childElements = [];
-            childrenMap[place.Name].forEach(c=>{
+            childrenMap[place.Name].forEach((c, childIndex)=>{
               const childDiv = document.createElement("div");
               childDiv.className = "place child";
               childDiv.innerHTML = c.Name;
               placeDiv.after(childDiv);
               placeDiv.childElements.push(childDiv);
 
-              childDiv.addEventListener("click", ()=>{
+              childDiv.addEventListener("click", (evt)=>{
+                evt.stopPropagation(); // prevent parent toggle
                 document.getElementById("map").scrollIntoView({ behavior: "smooth" });
                 map.setCenter({ lat: c.Lat, lng: c.Lng });
                 map.setZoom(16);
                 infoWindow.setContent(`<strong>${c.Name}</strong>`);
                 infoWindow.open(map, marker);
-                highlightList(index);
+                highlightList(index + childIndex + 1, true);
               });
             });
           }
@@ -247,9 +247,12 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   }
 
-  function highlightList(selectedIndex) {
+  function highlightList(selectedIndex, isChild = false) {
     const listDiv = document.getElementById("places-list");
     Array.from(listDiv.querySelectorAll(".place")).forEach((child, idx) => {
+      if(isChild){
+        child.classList.remove("selected");
+      }
       child.classList.toggle("selected", idx === selectedIndex);
     });
   }
@@ -264,4 +267,3 @@ src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAVImtk_O82lOoIWlJGkYM_sMw
 
 </body>
 </html>
-
