@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Two Years With You</title>
+<title>Just The Two Of Us</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Playfair+Display:wght@500&display=swap" rel="stylesheet">
 <style>
 body {
@@ -31,6 +31,7 @@ h1 {
   overflow: hidden;
   margin-bottom: 50px;
 }
+/* Balanced 4-column layout for parents and children */
 #places-list {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -71,7 +72,7 @@ h1 {
   transform: rotate(-180deg);
 }
 .place.child {
-  display: none;
+  display: block;
   padding-left: 30px;
   grid-column: 1 / -1;
   background: #f8f5f2;
@@ -80,6 +81,7 @@ h1 {
   margin-bottom: 4px;
   cursor: default;
   color: #6E6E6E;
+  font-size: 0.95em;
 }
 footer { text-align: center; margin-top: 60px; font-size: 14px; color: #8A8A8A; }
 </style>
@@ -155,101 +157,77 @@ document.addEventListener("DOMContentLoaded", function() {
       }
     });
 
-    places.forEach((place, index) => {
-      let markerLabel = "";
+    // Sort children alphabetically
+    for(let p in childrenMap){
+      childrenMap[p].sort((a,b) => a.Name.localeCompare(b.Name));
+    }
+
+    // Create parent and child list in balanced columns
+    places.forEach(place => {
       if(!place.Parent){
-        markerLabel = String(parentCounter);
+        const markerLabel = String(parentCounter);
         parentCounter++;
-      }
 
-      const marker = new google.maps.Marker({
-        position: { lat: place.Lat, lng: place.Lng },
-        map: !place.Parent ? map : null,
-        label: markerLabel ? { text: markerLabel, color: "#ffffff" } : null,
-        title: place.Name
-      });
+        const marker = new google.maps.Marker({
+          position: { lat: place.Lat, lng: place.Lng },
+          map: map,
+          label: { text: markerLabel, color: "#ffffff" },
+          title: place.Name
+        });
+        markers.push(marker);
 
-      markers.push(marker);
+        const placeDiv = document.createElement("div");
+        placeDiv.className = "place parent";
+        placeDiv.innerHTML = `<span class="place-number">${markerLabel}</span><span class="place-name">${place.Name}</span>`;
 
-      const placeDiv = document.createElement("div");
-      placeDiv.className = "place";
+        if(childrenMap[place.Name] && childrenMap[place.Name].length > 0){
+          placeDiv.classList.add("has-children");
+        }
 
-      if(!place.Parent){
-        placeDiv.classList.add("parent");
-        placeDiv.innerHTML = `
-          <span class="place-number">${markerLabel}</span>
-          <span class="place-name">${place.Name}</span>
-        `;
-        parentMap[place.Name] = placeDiv;
-
+        // Add children directly below parent
         if(childrenMap[place.Name]){
-  // Sort children alphabetically BEFORE creating child divs
-  childrenMap[place.Name].sort((a,b) => a.Name.localeCompare(b.Name));
+          placeDiv.childElements = [];
+          childrenMap[place.Name].forEach(c=>{
+            const childDiv = document.createElement("div");
+            childDiv.className = "place child";
+            childDiv.innerHTML = c.Name;
+            placeDiv.childElements.push(childDiv);
+            placeDiv.after(childDiv);
+            childDiv.style.display = "none";
+          });
+        }
 
-  placeDiv.classList.toggle("expanded");
-  placeDiv.childElements = placeDiv.childElements || [];
-  if(placeDiv.childElements.length === 0){
-    childrenMap[place.Name].forEach(c=>{
-      const childDiv = document.createElement("div");
-      childDiv.className = "place child";
-      childDiv.innerHTML = c.Name;
-      placeDiv.after(childDiv);
-      placeDiv.childElements.push(childDiv);
-    });
-  }
-  placeDiv.childElements.forEach(div=>{
-    div.style.display = placeDiv.classList.contains("expanded") ? "block" : "none";
-  });
-}
-      } else {
-        placeDiv.classList.add("child");
-        placeDiv.innerHTML = place.Name;
-      }
-
-      listDiv.appendChild(placeDiv);
-
-      // Child handling for display only, no clicks
-      if(!place.Parent && childrenMap[place.Name] && childrenMap[place.Name].length > 0){
-        childrenMap[place.Name].sort((a,b)=> a.Name.localeCompare(b.Name));
-        placeDiv.addEventListener("click", (e)=>{
+        placeDiv.addEventListener("click", e=>{
           if(e.target.classList.contains("place-name")) {
             document.getElementById("map").scrollIntoView({ behavior: "smooth" });
             map.setCenter({ lat: place.Lat, lng: place.Lng });
             map.setZoom(16);
 
-            // Info window includes children names
-            const childrenNames = childrenMap[place.Name].map(c => c.Name).join("<br>");
+            const childrenNames = childrenMap[place.Name] ? childrenMap[place.Name].map(c => c.Name).join("<br>") : "";
             infoWindow.setContent(`<strong>${place.Name}</strong>${childrenNames ? "<br>" + childrenNames : ""}`);
             infoWindow.open(map, marker);
 
-            highlightList(index);
+            highlightList(placeDiv);
           }
+
           if(childrenMap[place.Name]){
             placeDiv.classList.toggle("expanded");
-            placeDiv.childElements = placeDiv.childElements || [];
-            if(placeDiv.childElements.length === 0){
-              childrenMap[place.Name].forEach(c=>{
-                const childDiv = document.createElement("div");
-                childDiv.className = "place child";
-                childDiv.innerHTML = c.Name;
-                placeDiv.after(childDiv);
-                placeDiv.childElements.push(childDiv);
-              });
-            }
             placeDiv.childElements.forEach(div=>{
               div.style.display = placeDiv.classList.contains("expanded") ? "block" : "none";
             });
           }
         });
+
+        listDiv.appendChild(placeDiv);
       }
     });
   }
 
-  function highlightList(selectedIndex) {
-    const listDiv = document.getElementById("places-list");
-    Array.from(listDiv.querySelectorAll(".place")).forEach((child, idx) => {
-      child.classList.toggle("selected", idx === selectedIndex);
+  function highlightList(selectedDiv) {
+    document.querySelectorAll("#places-list .place").forEach(div=>{
+      div.classList.remove("selected");
     });
+    selectedDiv.classList.add("selected");
   }
 
   window.initMap = initMap;
@@ -262,4 +240,3 @@ src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAVImtk_O82lOoIWlJGkYM_sMw
 
 </body>
 </html>
-
