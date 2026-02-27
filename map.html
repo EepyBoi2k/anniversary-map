@@ -38,13 +38,12 @@ h1 {
   position: relative;
 }
 .place.parent { 
-  display: block;
+  display: flex;
+  align-items: center;
   cursor: pointer;
   padding: 12px 14px;
   border-bottom: 1px solid #D8CFC6;
   transition: background 0.2s ease;
-  display: flex;
-  align-items: center;
 }
 .place.parent:hover { background: #F1ECE6; }
 .place.parent.selected { background: #EAD9D1; }
@@ -61,9 +60,29 @@ h1 {
 }
 .place.child:hover { background: #EDE3DA; }
 
-.place-number { color: #9C6B5C; font-weight: 600; margin-right: 10px; min-width: 20px; }
-.place.parent.has-children::after { content: "▼"; margin-left: auto; font-size: 12px; transform: rotate(0deg); transition: transform 0.2s ease; }
-.place.parent.has-children.expanded::after { transform: rotate(-180deg); }
+.place-number { 
+  color: #9C6B5C; 
+  font-weight: 600; 
+  margin-right: 10px; 
+  min-width: 20px; 
+  cursor: default;
+}
+.place-name { 
+  flex: 1; 
+  cursor: pointer; 
+}
+.place.parent.has-children::after {
+  content: "▼";
+  margin-left: auto;
+  font-size: 12px;
+  transform: rotate(0deg);
+  transition: transform 0.2s ease;
+  pointer-events: auto;
+}
+.place.parent.has-children.expanded::after {
+  transform: rotate(-180deg);
+}
+
 footer { text-align: center; margin-top: 60px; font-size: 14px; color: #8A8A8A; }
 </style>
 </head>
@@ -78,7 +97,7 @@ if(password !== "march18") {
 </script>
 
 <div class="container">
-  <h1>Just The Two Of Us</h1>
+  <h1>Two Years With You</h1>
   <div id="map"></div>
   <div id="places-list"></div>
   <footer>Built quietly over two years.</footer>
@@ -111,14 +130,12 @@ function initMap() {
     header: true,
     skipEmptyLines: true,
     complete: function(results) {
-      const data = results.data.map(row => {
-        return {
-          Name: row.Name || row.name || row.Place || row.place || "Unnamed",
-          Lat: parseFloat(row.Lat || row.lat),
-          Lng: parseFloat(row.Lng || row.lng),
-          Parent: row.Parent || row.parent || ""
-        };
-      });
+      const data = results.data.map(row => ({
+        Name: row.Name || row.name || row.Place || row.place || "Unnamed",
+        Lat: parseFloat(row.Lat || row.lat),
+        Lng: parseFloat(row.Lng || row.lng),
+        Parent: row.Parent || row.parent || ""
+      }));
       addPlaces(data);
     }
   });
@@ -128,11 +145,12 @@ function addPlaces(places) {
   const listDiv = document.getElementById("places-list");
   const parentMap = {};
   const childrenMap = {};
-  let parentCounter = 1; // only count parents
+  let parentCounter = 1;
 
   places.forEach((place, index) => {
+    place.index = index;
 
-    // Marker for parent only
+    // Marker only for parents
     let markerLabel = "";
     if (!place.Parent) {
       markerLabel = String(parentCounter);
@@ -157,44 +175,53 @@ function addPlaces(places) {
     // Place div
     const placeDiv = document.createElement("div");
     placeDiv.className = "place";
-    placeDiv.innerHTML = !place.Parent
-      ? `<span class="place-number">${markerLabel}</span>${place.Name}`
-      : place.Name; // child has no number
 
-    placeDiv.addEventListener("click", () => {
-      document.getElementById("map").scrollIntoView({behavior: "smooth"});
-      map.setCenter({ lat: place.Lat, lng: place.Lng });
-      map.setZoom(16);
-      infoWindow.setContent(`<strong>${place.Name}</strong>`);
-      infoWindow.open(map, marker);
-      highlightList(index);
-
-      if(childrenMap[place.Name]) {
-        placeDiv.classList.toggle("expanded");
-        childrenMap[place.Name].forEach(c => {
-          c.style.display = c.style.display === "block" ? "none" : "block";
-        });
-      }
-    });
-
-    // Child or parent?
-    if(place.Parent) {
+    if(!place.Parent) {
+      placeDiv.classList.add("parent");
+      placeDiv.innerHTML = `
+        <span class="place-number">${markerLabel}</span>
+        <span class="place-name">${place.Name}</span>
+      `;
+    } else {
       placeDiv.classList.add("child");
+      placeDiv.innerHTML = place.Name;
       if(!childrenMap[place.Parent]) childrenMap[place.Parent] = [];
       childrenMap[place.Parent].push(placeDiv);
-    } else {
-      placeDiv.classList.add("parent");
-      listDiv.appendChild(placeDiv);
-      parentMap[place.Name] = placeDiv;
     }
+
+    listDiv.appendChild(placeDiv);
+    if(!place.Parent) parentMap[place.Name] = placeDiv;
+
+    // Click events
+    const nameSpan = placeDiv.querySelector(".place-name");
+    if(nameSpan){
+      nameSpan.addEventListener("click", () => {
+        document.getElementById("map").scrollIntoView({ behavior: "smooth" });
+        map.setCenter({ lat: place.Lat, lng: place.Lng });
+        map.setZoom(16);
+        infoWindow.setContent(`<strong>${place.Name}</strong>`);
+        infoWindow.open(map, marker);
+        highlightList(index);
+      });
+    }
+
+    // Arrow toggles children
+    if(!place.Parent && childrenMap[place.Name]){
+      placeDiv.classList.add("has-children");
+      placeDiv.addEventListener("click", (e)=>{
+        if(e.target.classList.contains("place-name")) return; // don't toggle when name clicked
+        placeDiv.classList.toggle("expanded");
+        childrenMap[place.Name].forEach(c=>c.style.display = c.style.display==="block"?"none":"block");
+      });
+    }
+
   });
 
-  // Append children under their parent
+  // Append children under parents
   Object.keys(childrenMap).forEach(parentName => {
     const parentDiv = parentMap[parentName];
     if(parentDiv) {
       childrenMap[parentName].forEach(childDiv => parentDiv.after(childDiv));
-      parentDiv.classList.add("has-children");
     }
   });
 }
@@ -213,4 +240,3 @@ src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAVImtk_O82lOoIWlJGkYM_sMw
 
 </body>
 </html>
-
