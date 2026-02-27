@@ -123,7 +123,6 @@ function initMap() {
 
   infoWindow = new google.maps.InfoWindow();
 
-  // Load CSV from Google Sheets
   Papa.parse('https://docs.google.com/spreadsheets/d/e/2PACX-1vSfGFuqglhR7Ss03-SJVzB_St46vLigoCEj6MOmJmSBsqg2SD0ebiTRt49IZ6jJnhYPlZtVBVpvX8ZG/pub?output=csv', {
     download: true,
     header: true,
@@ -146,7 +145,6 @@ function addPlaces(places) {
   const childrenMap = {};
   let parentCounter = 1;
 
-  // First pass: organize children
   places.forEach(place => {
     if(place.Parent){
       if(!childrenMap[place.Parent]) childrenMap[place.Parent] = [];
@@ -154,7 +152,6 @@ function addPlaces(places) {
     }
   });
 
-  // Second pass: create elements
   places.forEach((place, index) => {
     let markerLabel = "";
     if(!place.Parent){
@@ -188,7 +185,6 @@ function addPlaces(places) {
       `;
       parentMap[place.Name] = placeDiv;
 
-      // Add arrow if parent has children
       if(childrenMap[place.Name] && childrenMap[place.Name].length > 0){
         placeDiv.classList.add("has-children");
       }
@@ -199,7 +195,6 @@ function addPlaces(places) {
 
     listDiv.appendChild(placeDiv);
 
-    // Name click scrolls to map
     const nameSpan = placeDiv.querySelector(".place-name");
     if(nameSpan){
       nameSpan.addEventListener("click", () => {
@@ -212,40 +207,37 @@ function addPlaces(places) {
       });
     }
 
-    // Arrow toggles children
     if(!place.Parent && childrenMap[place.Name] && childrenMap[place.Name].length > 0){
-  placeDiv.addEventListener("click", (e)=>{
-    if(e.target.classList.contains("place-name")) return;
+      placeDiv.addEventListener("click", (e)=>{
+        if(e.target.classList.contains("place-name")) return;
+        placeDiv.classList.toggle("expanded");
 
-    // Toggle expanded class
-    placeDiv.classList.toggle("expanded");
+        if(!placeDiv.childElements){
+          placeDiv.childElements = [];
+          childrenMap[place.Name].forEach(c=>{
+            const childDiv = document.createElement("div");
+            childDiv.className = "place child";
+            childDiv.innerHTML = c.Name;
+            placeDiv.after(childDiv);
+            placeDiv.childElements.push(childDiv);
 
-    // Create children divs only if not already created
-    if(!placeDiv.childElements) {
-      placeDiv.childElements = [];
-      childrenMap[place.Name].forEach(c=>{
-        const childDiv = document.createElement("div");
-        childDiv.className = "place child";
-        childDiv.innerHTML = c.Name;
-        placeDiv.after(childDiv);
-        placeDiv.childElements.push(childDiv);
+            childDiv.addEventListener("click", ()=>{
+              document.getElementById("map").scrollIntoView({ behavior: "smooth" });
+              map.setCenter({ lat: place.Lat, lng: place.Lng });
+              map.setZoom(16);
+              infoWindow.setContent(`<strong>${c.Name}</strong>`);
+              infoWindow.open(map, marker);
+              highlightList(index);
+            });
+          });
+        }
 
-        // Click child scrolls to map and opens parent's marker info
-        childDiv.addEventListener("click", ()=>{
-          document.getElementById("map").scrollIntoView({ behavior: "smooth" });
-          map.setCenter({ lat: place.Lat, lng: place.Lng });
-          map.setZoom(16);
-          infoWindow.setContent(`<strong>${c.Name}</strong>`);
-          infoWindow.open(map, marker);
-          highlightList(index);
+        // Toggle visibility
+        placeDiv.childElements.forEach(div=>{
+          div.style.display = placeDiv.classList.contains("expanded") ? "block" : "none";
         });
       });
     }
-
-    // Toggle display of child elements
-    placeDiv.childElements.forEach(div=>{
-      div.style.display = placeDiv.classList.contains("expanded") ? "block" : "none";
-    });
   });
 }
 
@@ -263,4 +255,3 @@ src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAVImtk_O82lOoIWlJGkYM_sMw
 
 </body>
 </html>
-
