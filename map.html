@@ -9,7 +9,7 @@
 body {
   margin: 0;
   font-family: 'Inter', sans-serif;
-  background: #F8F4F0; /* page background */
+  background: #F8F4F0;
   color: #2E2E2E;
   scroll-behavior: smooth;
 }
@@ -23,7 +23,7 @@ h1 {
   text-align: center;
   font-weight: 500;
   margin-bottom: 40px;
-  color: #8B5E3C; /* header color */
+  color: #8B5E3C;
 }
 #map {
   width: 100%;
@@ -34,25 +34,24 @@ h1 {
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 #places-list {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 .place.parent { 
   padding: 14px 16px;
   border-radius: 10px;
-  background: #FFFFFF; /* parent block background */
+  background: #FFFFFF;
   border: 1px solid #D8CFC6;
   transition: background 0.2s ease, box-shadow 0.2s ease;
   cursor: pointer;
+  display: block;
+  width: 100%;
+  position: relative;
 }
 .place.parent:hover { 
-  background: #F1E8DF; /* hover background */
+  background: #F1E8DF;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-.place.parent.selected { 
-  background: #EAD9D1; 
-  box-shadow: 0 2px 10px rgba(0,0,0,0.15);
 }
 .place-number { 
   color: #9C6B5C; 
@@ -62,18 +61,40 @@ h1 {
   display: inline-block;
 }
 .children-container {
-  margin-left: 20px;
   margin-top: 6px;
+  display: none;
+  flex-direction: column;
+  gap: 2px;
+  margin-left: 20px;
 }
 .place.child {
   padding: 4px 12px;
   font-size: 0.95em;
   color: #6E6E6E;
-  background: #FAF5F0; /* child block background */
+  background: #FAF5F0;
   border-radius: 6px;
-  margin-bottom: 2px;
 }
-footer { text-align: center; margin-top: 60px; font-size: 14px; color: #8A8A8A; }
+.toggle-btn {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #D8CFC6;
+  border: none;
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  cursor: pointer;
+  font-weight: bold;
+  color: #8B5E3C;
+}
+.toggle-btn:hover { background: #C5B2A0; }
+footer { 
+  text-align: center; 
+  margin-top: 60px; 
+  font-size: 14px; 
+  color: #8A8A8A; 
+}
 </style>
 </head>
 <body>
@@ -176,7 +197,7 @@ document.addEventListener("DOMContentLoaded", function() {
             nameSpan.textContent = place.Name;
             parentDiv.appendChild(nameSpan);
 
-            // Children (always visible)
+            // Drop-down children
             let childrenContainer = null;
             if(childrenMap[place.Name]){
                 childrenContainer = document.createElement("div");
@@ -188,11 +209,26 @@ document.addEventListener("DOMContentLoaded", function() {
                     childrenContainer.appendChild(childDiv);
                 });
                 parentDiv.appendChild(childrenContainer);
+
+                // Toggle button
+                const toggleBtn = document.createElement("button");
+                toggleBtn.className = "toggle-btn";
+                toggleBtn.textContent = "+";
+                toggleBtn.addEventListener("click", (e)=>{
+                    e.stopPropagation();
+                    if(childrenContainer.style.display === "flex"){
+                        childrenContainer.style.display = "none";
+                        toggleBtn.textContent = "+";
+                    } else {
+                        childrenContainer.style.display = "flex";
+                        toggleBtn.textContent = "−";
+                    }
+                });
+                parentDiv.appendChild(toggleBtn);
             }
 
-            // Click parent block
-            parentDiv.addEventListener("click", (e) => {
-                if(e.target !== nameSpan && e.target !== numberSpan) return; // optional: only click name
+            // Click parent block (without toggling children)
+            parentDiv.addEventListener("click", () => {
                 document.getElementById("map").scrollIntoView({ behavior: "smooth" });
                 map.setCenter({ lat: place.Lat, lng: place.Lng });
                 map.setZoom(16);
