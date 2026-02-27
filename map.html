@@ -1,46 +1,91 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Just The Two Of Us - Map</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
-    #map { height: 500px; width: 100%; margin-bottom: 20px; }
-    .places-container {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-    }
-    .place {
-      cursor: pointer;
-      color: #0077cc;
-      padding: 4px;
-      border-bottom: 1px solid #ddd;
-    }
-    .place:hover { text-decoration: underline; }
-    .place-number { font-weight: bold; margin-right: 4px; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Two Years With You</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Playfair+Display:wght@500&display=swap" rel="stylesheet">
+<style>
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background: #FAF8F5;
+  color: #2E2E2E;
+}
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+h1 {
+  font-family: 'Playfair Display', serif;
+  text-align: center;
+  font-weight: 500;
+  margin-bottom: 40px;
+}
+#map {
+  width: 100%;
+  height: 500px;
+  border-radius: 18px;
+  overflow: hidden;
+  margin-bottom: 50px;
+}
+#places-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 10px 20px;
+}
+.place {
+  padding: 12px 14px;
+  border-bottom: 1px solid #D8CFC6;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  display: flex;
+  align-items: center;
+}
+.place:hover {
+  background: #F1ECE6;
+}
+.place-number {
+  color: #9C6B5C;
+  font-weight: 600;
+  margin-right: 10px;
+  min-width: 20px;
+}
+footer {
+  text-align: center;
+  margin-top: 60px;
+  font-size: 14px;
+  color: #8A8A8A;
+}
+</style>
 </head>
 <body>
 
 <script>
   // Password protection
   let password = prompt("Enter the password to view the map:");
-  if (password !== "march18") {
-    document.body.innerHTML = "<h2>Access Denied</h2>";
+  if(password !== "march18") {
+    document.body.innerHTML = "<h2 style='text-align:center;margin-top:50px;'>Access Denied</h2>";
     throw "Wrong password";
   }
 </script>
 
-<h2>Our Special Places</h2>
-<div id="map"></div>
+<div class="container">
+  <h1>Two Years With You</h1>
 
-<h3>Click a place to zoom:</h3>
-<div class="places-container" id="places-list"></div>
+  <div id="map"></div>
+
+  <div id="places-list"></div>
+
+  <footer>Built quietly over two years.</footer>
+</div>
 
 <script>
 let map;
+let markers = [];
 
+// Initialize the Google Map
 function initMap() {
   map = new google.maps.Map(document.getElementById("map"), {
     center: { lat: -31.9523, lng: 115.8613 },
@@ -55,49 +100,46 @@ function initMap() {
     ]
   });
 
-  loadPlaces();
+  // Load places from Google Sheet CSV
+  fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vSfGFuqglhR7Ss03-SJVzB_St46vLigoCEj6MOmJmSBsqg2SD0ebiTRt49IZ6jJnhYPlZtVBVpvX8ZG/pub?output=csv')
+    .then(response => response.text())
+    .then(csvText => {
+      const data = csvText.split('\n').slice(1).map(line => {
+        const [name, lat, lng] = line.split(',');
+        return {title: name, lat: parseFloat(lat), lng: parseFloat(lng)};
+      });
+      addPlaces(data);
+    });
 }
 
-// Fetch places from Google Sheets
-async function loadPlaces() {
-  const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSfGFuqglhR7Ss03-SJVzB_St46vLigoCEj6MOmJmSBsqg2SD0ebiTRt49IZ6jJnhYPlZtVBVpvX8ZG/pub?output=csv"; // Replace with your Sheet ID
-  const res = await fetch(sheetURL);
-  const text = await res.text();
-  const rows = text.split("\n").slice(1); // skip header
-
-  const places = rows.map(row => {
-    const [title, lat, lng] = row.split(",");
-    return { title, lat: parseFloat(lat), lng: parseFloat(lng) };
-  });
-
-  const listContainer = document.getElementById("places-list");
-
+// Add markers and clickable list
+function addPlaces(places) {
+  const listDiv = document.getElementById("places-list");
   places.forEach((place, index) => {
-    // Add marker
-    new google.maps.Marker({
-      position: {lat: place.lat, lng: place.lng},
+    // Marker
+    const marker = new google.maps.Marker({
+      position: { lat: place.lat, lng: place.lng },
       map: map,
-      label: { text: (index + 1).toString(), color: "white", fontWeight: "bold" },
+      label: { text: String(index+1), color: "#ffffff" },
       title: place.title
     });
+    markers.push(marker);
 
-    // Add clickable list item
-    const div = document.createElement("div");
-    div.className = "place";
-    div.innerHTML = `<span class="place-number">${index + 1}</span>${place.title}`;
-    div.onclick = () => {
-      map.setCenter({lat: place.lat, lng: place.lng});
+    // List item
+    const placeDiv = document.createElement("div");
+    placeDiv.className = "place";
+    placeDiv.innerHTML = `<span class="place-number">${index+1}</span>${place.title}`;
+    placeDiv.addEventListener("click", () => {
+      map.setCenter({ lat: place.lat, lng: place.lng });
       map.setZoom(16);
-    };
-    listContainer.appendChild(div);
+    });
+    listDiv.appendChild(placeDiv);
   });
 }
 </script>
 
 <script async
-  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAVImtk_O82lOoIWlJGkYM_sMw0oAYZIhQ&callback=initMap">
+src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAVImtk_O82lOoIWlJGkYM_sMw0oAYZIhQ&callback=initMap">
 </script>
-
 </body>
 </html>
-
