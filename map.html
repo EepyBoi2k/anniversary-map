@@ -9,7 +9,7 @@
 body {
   margin: 0;
   font-family: 'Inter', sans-serif;
-  background: #FAF8F5;
+  background: #F8F4F0; /* page background */
   color: #2E2E2E;
   scroll-behavior: smooth;
 }
@@ -23,6 +23,7 @@ h1 {
   text-align: center;
   font-weight: 500;
   margin-bottom: 40px;
+  color: #8B5E3C; /* header color */
 }
 #map {
   width: 100%;
@@ -30,20 +31,29 @@ h1 {
   border-radius: 18px;
   overflow: hidden;
   margin-bottom: 50px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 #places-list {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 10px 20px;
+  gap: 12px 20px;
 }
 .place.parent { 
-  padding: 12px 14px;
-  border-bottom: 1px solid #D8CFC6;
-  transition: background 0.2s ease;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: #FFFFFF; /* parent block background */
+  border: 1px solid #D8CFC6;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
   cursor: pointer;
 }
-.place.parent:hover { background: #F1ECE6; }
-.place.parent.selected { background: #EAD9D1; }
+.place.parent:hover { 
+  background: #F1E8DF; /* hover background */
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.place.parent.selected { 
+  background: #EAD9D1; 
+  box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+}
 .place-number { 
   color: #9C6B5C; 
   font-weight: 600; 
@@ -53,12 +63,15 @@ h1 {
 }
 .children-container {
   margin-left: 20px;
-  margin-top: 4px;
+  margin-top: 6px;
 }
 .place.child {
-  padding: 2px 10px;
+  padding: 4px 12px;
   font-size: 0.95em;
   color: #6E6E6E;
+  background: #FAF5F0; /* child block background */
+  border-radius: 6px;
+  margin-bottom: 2px;
 }
 footer { text-align: center; margin-top: 60px; font-size: 14px; color: #8A8A8A; }
 </style>
@@ -140,7 +153,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
     places.forEach(place => {
         if(!place.Parent){ 
-            // Marker
             const markerLabel = String(parentCounter++);
             const marker = new google.maps.Marker({
                 position: { lat: place.Lat, lng: place.Lng },
@@ -150,7 +162,7 @@ document.addEventListener("DOMContentLoaded", function() {
             });
             markers.push(marker);
 
-            // Parent in list
+            // Parent block
             const parentDiv = document.createElement("div");
             parentDiv.className = "place parent";
 
@@ -178,8 +190,9 @@ document.addEventListener("DOMContentLoaded", function() {
                 parentDiv.appendChild(childrenContainer);
             }
 
-            // Click parent to scroll to map + info window
-            nameSpan.addEventListener("click", () => {
+            // Click parent block
+            parentDiv.addEventListener("click", (e) => {
+                if(e.target !== nameSpan && e.target !== numberSpan) return; // optional: only click name
                 document.getElementById("map").scrollIntoView({ behavior: "smooth" });
                 map.setCenter({ lat: place.Lat, lng: place.Lng });
                 map.setZoom(16);
