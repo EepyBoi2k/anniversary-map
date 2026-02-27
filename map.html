@@ -114,15 +114,21 @@ function addPlaces(places) {
   const listDiv = document.getElementById("places-list");
   const parentMap = {};
   const childrenMap = {};
+  let parentCounter = 1; // only count parents
 
   places.forEach((place, index) => {
-    place.index = index;
 
-    // Marker
+    // Marker for parent only
+    let markerLabel = "";
+    if (!place.Parent) {
+      markerLabel = String(parentCounter);
+      parentCounter++;
+    }
+
     const marker = new google.maps.Marker({
       position: { lat: place.Lat, lng: place.Lng },
       map: map,
-      label: { text: String(index+1), color: "#ffffff" },
+      label: markerLabel ? { text: markerLabel, color: "#ffffff" } : null,
       title: place.Name
     });
 
@@ -137,7 +143,9 @@ function addPlaces(places) {
     // Place div
     const placeDiv = document.createElement("div");
     placeDiv.className = "place";
-    placeDiv.innerHTML = `<span class="place-number">${index+1}</span>${place.Name}`;
+    placeDiv.innerHTML = !place.Parent
+      ? `<span class="place-number">${markerLabel}</span>${place.Name}`
+      : place.Name; // child has no number
 
     placeDiv.addEventListener("click", () => {
       document.getElementById("map").scrollIntoView({behavior: "smooth"});
@@ -147,7 +155,6 @@ function addPlaces(places) {
       infoWindow.open(map, marker);
       highlightList(index);
 
-      // Toggle children
       if(childrenMap[place.Name]) {
         placeDiv.classList.toggle("expanded");
         childrenMap[place.Name].forEach(c => {
@@ -156,6 +163,7 @@ function addPlaces(places) {
       }
     });
 
+    // Child or parent?
     if(place.Parent) {
       placeDiv.classList.add("child");
       if(!childrenMap[place.Parent]) childrenMap[place.Parent] = [];
