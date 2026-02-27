@@ -33,7 +33,7 @@ h1 {
 }
 #places-list {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 10px 20px;
 }
 .place {
@@ -47,9 +47,9 @@ h1 {
 .place:hover { background: #F1ECE6; }
 .place.selected { background: #EAD9D1; }
 .place-number { color: #9C6B5C; font-weight: 600; margin-right: 10px; min-width: 20px; }
-.place.child { padding-left: 30px; display: none; }
-.place.parent::after { content: "▼"; margin-left: auto; font-size: 12px; transform: rotate(0deg); transition: transform 0.2s ease; }
-.place.parent.expanded::after { transform: rotate(-180deg); }
+.place.child { display: none; padding-left: 30px; }
+.place.parent.has-children::after { content: "▼"; margin-left: auto; font-size: 12px; transform: rotate(0deg); transition: transform 0.2s ease; }
+.place.parent.has-children.expanded::after { transform: rotate(-180deg); }
 footer { text-align: center; margin-top: 60px; font-size: 14px; color: #8A8A8A; }
 </style>
 </head>
@@ -98,7 +98,6 @@ function initMap() {
     skipEmptyLines: true,
     complete: function(results) {
       const data = results.data.map(row => {
-        // Normalize headers
         return {
           Name: row.Name || row.name || row.Place || row.place || "Unnamed",
           Lat: parseFloat(row.Lat || row.lat),
@@ -113,13 +112,13 @@ function initMap() {
 
 function addPlaces(places) {
   const listDiv = document.getElementById("places-list");
-  const parentMap = {}; // track parents with children
-
-  // Determine which names are parents
-  const hasChildren = {};
-  places.forEach(p => { if(p.Parent) hasChildren[p.Parent] = true; });
+  const parentMap = {};
+  const childrenMap = {};
 
   places.forEach((place, index) => {
+    place.index = index;
+
+    // Marker
     const marker = new google.maps.Marker({
       position: { lat: place.Lat, lng: place.Lng },
       map: map,
@@ -135,12 +134,10 @@ function addPlaces(places) {
 
     markers.push(marker);
 
+    // Place div
     const placeDiv = document.createElement("div");
-    placeDiv.className = "place" + (place.Parent ? " child" : " parent");
+    placeDiv.className = "place";
     placeDiv.innerHTML = `<span class="place-number">${index+1}</span>${place.Name}`;
-
-    // Mark child-parent relationship
-    if(place.Parent) placeDiv.dataset.parent = place.Parent;
 
     placeDiv.addEventListener("click", () => {
       document.getElementById("map").scrollIntoView({behavior: "smooth"});
@@ -150,20 +147,32 @@ function addPlaces(places) {
       infoWindow.open(map, marker);
       highlightList(index);
 
-      // Toggle children only for parents that actually have children
-      if(!place.Parent && hasChildren[place.Name]) {
+      // Toggle children
+      if(childrenMap[place.Name]) {
         placeDiv.classList.toggle("expanded");
-        const children = Array.from(listDiv.querySelectorAll(`.child[data-parent="${place.Name}"]`));
-        children.forEach(c => c.style.display = c.style.display === "block" ? "none" : "block");
+        childrenMap[place.Name].forEach(c => {
+          c.style.display = c.style.display === "block" ? "none" : "block";
+        });
       }
     });
 
     if(place.Parent) {
-      const parentDiv = parentMap[place.Parent];
-      if(parentDiv) parentDiv.after(placeDiv);
+      placeDiv.classList.add("child");
+      if(!childrenMap[place.Parent]) childrenMap[place.Parent] = [];
+      childrenMap[place.Parent].push(placeDiv);
     } else {
+      placeDiv.classList.add("parent");
       listDiv.appendChild(placeDiv);
       parentMap[place.Name] = placeDiv;
+    }
+  });
+
+  // Append children under their parent
+  Object.keys(childrenMap).forEach(parentName => {
+    const parentDiv = parentMap[parentName];
+    if(parentDiv) {
+      childrenMap[parentName].forEach(childDiv => parentDiv.after(childDiv));
+      parentDiv.classList.add("has-children");
     }
   });
 }
