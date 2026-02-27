@@ -48,18 +48,6 @@ h1 {
 .place.parent:hover { background: #F1ECE6; }
 .place.parent.selected { background: #EAD9D1; }
 
-.place.child {
-  display: none;
-  padding-left: 30px;
-  grid-column: 1 / -1;
-  background: #f8f5f2;
-  border-left: 2px solid #D8CFC6;
-  border-radius: 0 8px 8px 0;
-  margin-bottom: 4px;
-  cursor: pointer;
-}
-.place.child:hover { background: #EDE3DA; }
-
 .place-number { 
   color: #9C6B5C; 
   font-weight: 600; 
@@ -81,6 +69,17 @@ h1 {
 }
 .place.parent.has-children.expanded::after {
   transform: rotate(-180deg);
+}
+.place.child {
+  display: none;
+  padding-left: 30px;
+  grid-column: 1 / -1;
+  background: #f8f5f2;
+  border-left: 2px solid #D8CFC6;
+  border-radius: 0 8px 8px 0;
+  margin-bottom: 4px;
+  cursor: default;
+  color: #6E6E6E;
 }
 footer { text-align: center; margin-top: 60px; font-size: 14px; color: #8A8A8A; }
 </style>
@@ -170,12 +169,6 @@ document.addEventListener("DOMContentLoaded", function() {
         title: place.Name
       });
 
-      marker.addListener("click", () => {
-        infoWindow.setContent(`<strong>${place.Name}</strong>`);
-        infoWindow.open(map, marker);
-        highlightList(index, place.Parent ? true : false);
-      });
-
       markers.push(marker);
 
       const placeDiv = document.createElement("div");
@@ -199,60 +192,46 @@ document.addEventListener("DOMContentLoaded", function() {
 
       listDiv.appendChild(placeDiv);
 
-      const nameSpan = placeDiv.querySelector(".place-name");
-      if(nameSpan){
-        nameSpan.addEventListener("click", () => {
-          document.getElementById("map").scrollIntoView({ behavior: "smooth" });
-          if(marker.getMap()) map.setCenter({ lat: place.Lat, lng: place.Lng });
-          map.setZoom(16);
-          infoWindow.setContent(`<strong>${place.Name}</strong>`);
-          infoWindow.open(map, marker);
-          highlightList(index, place.Parent ? true : false);
-        });
-      }
-
-      // Handle children
+      // Child handling for display only, no clicks
       if(!place.Parent && childrenMap[place.Name] && childrenMap[place.Name].length > 0){
         childrenMap[place.Name].sort((a,b)=> a.Name.localeCompare(b.Name));
         placeDiv.addEventListener("click", (e)=>{
-          if(e.target.classList.contains("place-name")) return;
-          placeDiv.classList.toggle("expanded");
+          if(e.target.classList.contains("place-name")) {
+            document.getElementById("map").scrollIntoView({ behavior: "smooth" });
+            map.setCenter({ lat: place.Lat, lng: place.Lng });
+            map.setZoom(16);
 
-          if(!placeDiv.childElements){
-            placeDiv.childElements = [];
-            childrenMap[place.Name].forEach((c, childIndex)=>{
-              const childDiv = document.createElement("div");
-              childDiv.className = "place child";
-              childDiv.innerHTML = c.Name;
-              placeDiv.after(childDiv);
-              placeDiv.childElements.push(childDiv);
+            // Info window includes children names
+            const childrenNames = childrenMap[place.Name].map(c => c.Name).join("<br>");
+            infoWindow.setContent(`<strong>${place.Name}</strong>${childrenNames ? "<br>" + childrenNames : ""}`);
+            infoWindow.open(map, marker);
 
-              childDiv.addEventListener("click", (evt)=>{
-                evt.stopPropagation(); // prevent parent toggle
-                document.getElementById("map").scrollIntoView({ behavior: "smooth" });
-                map.setCenter({ lat: c.Lat, lng: c.Lng });
-                map.setZoom(16);
-                infoWindow.setContent(`<strong>${c.Name}</strong>`);
-                infoWindow.open(map, marker);
-                highlightList(index + childIndex + 1, true);
+            highlightList(index);
+          }
+          if(childrenMap[place.Name]){
+            placeDiv.classList.toggle("expanded");
+            placeDiv.childElements = placeDiv.childElements || [];
+            if(placeDiv.childElements.length === 0){
+              childrenMap[place.Name].forEach(c=>{
+                const childDiv = document.createElement("div");
+                childDiv.className = "place child";
+                childDiv.innerHTML = c.Name;
+                placeDiv.after(childDiv);
+                placeDiv.childElements.push(childDiv);
               });
+            }
+            placeDiv.childElements.forEach(div=>{
+              div.style.display = placeDiv.classList.contains("expanded") ? "block" : "none";
             });
           }
-
-          placeDiv.childElements.forEach(div=>{
-            div.style.display = placeDiv.classList.contains("expanded") ? "block" : "none";
-          });
         });
       }
     });
   }
 
-  function highlightList(selectedIndex, isChild = false) {
+  function highlightList(selectedIndex) {
     const listDiv = document.getElementById("places-list");
     Array.from(listDiv.querySelectorAll(".place")).forEach((child, idx) => {
-      if(isChild){
-        child.classList.remove("selected");
-      }
       child.classList.toggle("selected", idx === selectedIndex);
     });
   }
