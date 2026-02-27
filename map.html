@@ -58,6 +58,17 @@ h1 {
 }
 .place.child {
   padding-left: 30px;
+  display: none; /* start hidden */
+}
+.place.parent::after {
+  content: "▼";
+  margin-left: auto;
+  font-size: 12px;
+  transform: rotate(0deg);
+  transition: transform 0.2s ease;
+}
+.place.parent.expanded::after {
+  transform: rotate(-180deg);
 }
 footer {
   text-align: center;
@@ -70,7 +81,6 @@ footer {
 <body>
 
 <script>
-  // Password protection
   let password = prompt("Enter the password to view the map:");
   if(password !== "march18") {
     document.body.innerHTML = "<h2 style='text-align:center;margin-top:50px;'>Access Denied</h2>";
@@ -88,13 +98,14 @@ footer {
   <footer>Built quietly over two years.</footer>
 </div>
 
+<!-- Load PapaParse for CSV parsing -->
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
 <script>
 let map;
 let markers = [];
 let infoWindow;
-let selectedPlaceDiv = null;
 
-// Initialize Google Map
 function initMap() {
   map = new google.maps.Map(document.getElementById("map"), {
     center: { lat: -31.9523, lng: 115.8613 },
@@ -111,33 +122,34 @@ function initMap() {
 
   infoWindow = new google.maps.InfoWindow();
 
-  // Load places from Google Sheet CSV
-  fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vSfGFuqglhR7Ss03-SJVzB_St46vLigoCEj6MOmJmSBsqg2SD0ebiTRt49IZ6jJnhYPlZtVBVpvX8ZG/pub?output=csv')
-    .then(response => response.text())
-    .then(csvText => {
-      const data = csvText.split('\n').slice(1).map(line => {
-        const [name, lat, lng, parent] = line.split(',');
-        return {title: name, lat: parseFloat(lat), lng: parseFloat(lng), parent: parent || ''};
-      });
-      addPlaces(data);
-    });
+  Papa.parse('https://docs.google.com/spreadsheets/d/e/2PACX-1vSfGFuqglhR7Ss03-SJVzB_St46vLigoCEj6MOmJmSBsqg2SD0ebiTRt49IZ6jJnhYPlZtVBVpvX8ZG/pub?output=csv', {
+    download: true,
+    header: true,
+    skipEmptyLines: true,
+    complete: function(results) {
+      addPlaces(results.data);
+    }
+  });
 }
 
-// Add markers and nested list
 function addPlaces(places) {
   const listDiv = document.getElementById("places-list");
-  const parentMap = {};
+  const parentMap = {}; // parent name -> div element
 
   places.forEach((place, index) => {
+    const lat = parseFloat(place.Lat);
+    const lng = parseFloat(place.Lng);
+    const parent = place.Parent || "";
+
     const marker = new google.maps.Marker({
-      position: { lat: place.lat, lng: place.lng },
+      position: { lat, lng },
       map: map,
       label: { text: String(index+1), color: "#ffffff" },
-      title: place.title
+      title: place.Name
     });
 
     marker.addListener("click", () => {
-      infoWindow.setContent(`<strong>${place.title}</strong>`);
+      infoWindow.setContent(`<strong>${place.Name}</strong>`);
       infoWindow.open(map, marker);
       highlightList(index);
     });
@@ -145,28 +157,36 @@ function addPlaces(places) {
     markers.push(marker);
 
     const placeDiv = document.createElement("div");
-    placeDiv.className = "place" + (place.parent ? " child" : "");
-    placeDiv.innerHTML = `<span class="place-number">${index+1}</span>${place.title}`;
+    placeDiv.className = "place" + (parent ? " child" : " parent");
+    placeDiv.innerHTML = `<span class="place-number">${index+1}</span>${place.Name}`;
 
     placeDiv.addEventListener("click", () => {
       document.getElementById("map").scrollIntoView({behavior: "smooth"});
-      map.setCenter({ lat: place.lat, lng: place.lng });
+      map.setCenter({ lat, lng });
       map.setZoom(16);
-      infoWindow.setContent(`<strong>${place.title}</strong>`);
+      infoWindow.setContent(`<strong>${place.Name}</strong>`);
       infoWindow.open(map, marker);
       highlightList(index);
+
+      // Toggle children if parent
+      if(placeDiv.classList.contains("parent") && !parent) {
+        placeDiv.classList.toggle("expanded");
+        const children = Array.from(listDiv.querySelectorAll(`.child[data-parent="${place.Name}"]`));
+        children.forEach(c => c.style.display = c.style.display === "block" ? "none" : "block");
+      }
     });
 
-    if(place.parent && parentMap[place.parent]) {
-      parentMap[place.parent].appendChild(placeDiv);
-    } else if(!place.parent) {
+    if(parent) {
+      placeDiv.dataset.parent = parent;
+      const parentDiv = parentMap[parent];
+      if(parentDiv) parentDiv.after(placeDiv); // insert after parent
+    } else {
       listDiv.appendChild(placeDiv);
-      parentMap[place.title] = placeDiv;
+      parentMap[place.Name] = placeDiv;
     }
   });
 }
 
-// Highlight selected place
 function highlightList(selectedIndex) {
   const listDiv = document.getElementById("places-list");
   Array.from(listDiv.querySelectorAll(".place")).forEach((child, idx) => {
@@ -178,5 +198,6 @@ function highlightList(selectedIndex) {
 <script async
 src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAVImtk_O82lOoIWlJGkYM_sMw0oAYZIhQ&callback=initMap">
 </script>
+
 </body>
 </html>
