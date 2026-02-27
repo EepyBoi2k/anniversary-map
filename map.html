@@ -37,7 +37,9 @@ h1 {
   gap: 10px 20px;
 }
 .place.parent { 
-  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: 12px 14px;
   border-bottom: 1px solid #D8CFC6;
   transition: background 0.2s ease;
@@ -52,20 +54,16 @@ h1 {
   min-width: 20px; 
   cursor: default;
 }
-.place-name { 
-  flex: 1; 
-}
-.place.parent.has-children::after {
-  content: "▼";
-  margin-left: auto;
-  font-size: 12px;
+.place-name { flex: 1; cursor: pointer; }
+.toggle-children-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
   transform: rotate(0deg);
   transition: transform 0.2s ease;
-  pointer-events: auto;
 }
-.place.parent.has-children.expanded::after {
-  transform: rotate(-180deg);
-}
+.toggle-children-btn.expanded { transform: rotate(-180deg); }
 .children-container {
   display: none;
   margin-top: 6px;
@@ -78,7 +76,6 @@ h1 {
   padding: 4px 10px;
   font-size: 0.95em;
   color: #6E6E6E;
-  cursor: default;
 }
 footer { text-align: center; margin-top: 60px; font-size: 14px; color: #8A8A8A; }
 </style>
@@ -145,7 +142,6 @@ document.addEventListener("DOMContentLoaded", function() {
     const childrenMap = {};
     let parentCounter = 1;
 
-    // Organize children under their parent
     places.forEach(place => {
         if(place.Parent){
             if(!childrenMap[place.Parent]) childrenMap[place.Parent] = [];
@@ -153,14 +149,12 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
 
-    // Sort children alphabetically
     for(let p in childrenMap){
         childrenMap[p].sort((a,b) => a.Name.localeCompare(b.Name));
     }
 
-    // Add parents and children
     places.forEach(place => {
-        if(!place.Parent){ // only top-level parents
+        if(!place.Parent){ 
             const markerLabel = String(parentCounter++);
             const marker = new google.maps.Marker({
                 position: { lat: place.Lat, lng: place.Lng },
@@ -172,14 +166,16 @@ document.addEventListener("DOMContentLoaded", function() {
 
             const parentDiv = document.createElement("div");
             parentDiv.className = "place parent";
-            parentDiv.innerHTML = `<span class="place-number">${markerLabel}</span><span class="place-name">${place.Name}</span>`;
-            
-            // Add children container if there are children
-            if(childrenMap[place.Name]){
-                parentDiv.classList.add("has-children");
-                const childrenContainer = document.createElement("div");
-                childrenContainer.className = "children-container";
 
+            const nameSpan = document.createElement("span");
+            nameSpan.className = "place-name";
+            nameSpan.textContent = place.Name;
+            parentDiv.appendChild(nameSpan);
+
+            let childrenContainer = null;
+            if(childrenMap[place.Name]){
+                childrenContainer = document.createElement("div");
+                childrenContainer.className = "children-container";
                 childrenMap[place.Name].forEach(c=>{
                     const childDiv = document.createElement("div");
                     childDiv.className = "place child";
@@ -187,28 +183,28 @@ document.addEventListener("DOMContentLoaded", function() {
                     childrenContainer.appendChild(childDiv);
                 });
                 parentDiv.appendChild(childrenContainer);
+
+                const toggleBtn = document.createElement("button");
+                toggleBtn.className = "toggle-children-btn";
+                toggleBtn.textContent = "▼";
+                toggleBtn.addEventListener("click", (e)=>{
+                    e.stopPropagation();
+                    childrenContainer.style.display = childrenContainer.style.display === "block" ? "none" : "block";
+                    toggleBtn.classList.toggle("expanded");
+                });
+                parentDiv.appendChild(toggleBtn);
             }
 
-            // Click handler
-            parentDiv.addEventListener("click", e=>{
-                if(e.target.classList.contains("place-name")) {
-                    document.getElementById("map").scrollIntoView({ behavior: "smooth" });
-                    map.setCenter({ lat: place.Lat, lng: place.Lng });
-                    map.setZoom(16);
+            nameSpan.addEventListener("click", () => {
+                document.getElementById("map").scrollIntoView({ behavior: "smooth" });
+                map.setCenter({ lat: place.Lat, lng: place.Lng });
+                map.setZoom(16);
 
-                    const childrenNames = childrenMap[place.Name] ? childrenMap[place.Name].map(c => c.Name).join("<br>") : "";
-                    infoWindow.setContent(`<strong>${place.Name}</strong>${childrenNames ? "<br>" + childrenNames : ""}`);
-                    infoWindow.open(map, marker);
+                const childrenNames = childrenMap[place.Name] ? childrenMap[place.Name].map(c => c.Name).join("<br>") : "";
+                infoWindow.setContent(`<strong>${place.Name}</strong>${childrenNames ? "<br>" + childrenNames : ""}`);
+                infoWindow.open(map, marker);
 
-                    highlightList(parentDiv);
-                }
-
-                // Toggle children visibility
-                if(childrenMap[place.Name]){
-                    const container = parentDiv.querySelector(".children-container");
-                    container.style.display = container.style.display === "block" ? "none" : "block";
-                    parentDiv.classList.toggle("expanded");
-                }
+                highlightList(parentDiv);
             });
 
             listDiv.appendChild(parentDiv);
