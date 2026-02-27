@@ -35,19 +35,33 @@ h1 {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 10px 20px;
+  position: relative;
 }
-.place {
+.place.parent { 
+  display: block;
+  cursor: pointer;
   padding: 12px 14px;
   border-bottom: 1px solid #D8CFC6;
-  cursor: pointer;
   transition: background 0.2s ease;
   display: flex;
   align-items: center;
 }
-.place:hover { background: #F1ECE6; }
-.place.selected { background: #EAD9D1; }
+.place.parent:hover { background: #F1ECE6; }
+.place.parent.selected { background: #EAD9D1; }
+
+.place.child {
+  display: none; /* hidden by default */
+  padding-left: 30px;
+  grid-column: 1 / -1; /* spans full width */
+  background: #f8f5f2;
+  border-left: 2px solid #D8CFC6;
+  border-radius: 0 8px 8px 0;
+  margin-bottom: 4px;
+  cursor: pointer;
+}
+.place.child:hover { background: #EDE3DA; }
+
 .place-number { color: #9C6B5C; font-weight: 600; margin-right: 10px; min-width: 20px; }
-.place.child { display: none; padding-left: 30px; }
 .place.parent.has-children::after { content: "▼"; margin-left: auto; font-size: 12px; transform: rotate(0deg); transition: transform 0.2s ease; }
 .place.parent.has-children.expanded::after { transform: rotate(-180deg); }
 footer { text-align: center; margin-top: 60px; font-size: 14px; color: #8A8A8A; }
@@ -199,3 +213,4 @@ src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAVImtk_O82lOoIWlJGkYM_sMw
 
 </body>
 </html>
+
