@@ -212,6 +212,9 @@ document.addEventListener("DOMContentLoaded", function() {
       }
 
       if(!place.Parent && childrenMap[place.Name] && childrenMap[place.Name].length > 0){
+        // Sort children alphabetically
+        childrenMap[place.Name].sort((a,b)=> a.Name.localeCompare(b.Name));
+
         placeDiv.addEventListener("click", (e)=>{
           if(e.target.classList.contains("place-name")) return;
           placeDiv.classList.toggle("expanded");
@@ -261,3 +264,4 @@ src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAVImtk_O82lOoIWlJGkYM_sMw
 
 </body>
 </html>
+
