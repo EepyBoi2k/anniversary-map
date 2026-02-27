@@ -14,7 +14,7 @@ body {
   scroll-behavior: smooth;
 }
 .container {
-  max-width: 1100px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 40px 20px;
 }
@@ -34,9 +34,9 @@ h1 {
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 #places-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
 }
 .place.parent { 
   padding: 14px 16px;
@@ -65,7 +65,7 @@ h1 {
   display: none;
   flex-direction: column;
   gap: 2px;
-  margin-left: 20px;
+  margin-left: 12px;
 }
 .place.child {
   padding: 4px 12px;
