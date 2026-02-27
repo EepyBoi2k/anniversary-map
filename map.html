@@ -11,6 +11,7 @@ body {
   font-family: 'Inter', sans-serif;
   background: #FAF8F5;
   color: #2E2E2E;
+  scroll-behavior: smooth;
 }
 .container {
   max-width: 1100px;
@@ -46,11 +47,17 @@ h1 {
 .place:hover {
   background: #F1ECE6;
 }
+.place.selected {
+  background: #EAD9D1;
+}
 .place-number {
   color: #9C6B5C;
   font-weight: 600;
   margin-right: 10px;
   min-width: 20px;
+}
+.place.child {
+  padding-left: 30px;
 }
 footer {
   text-align: center;
@@ -85,8 +92,9 @@ footer {
 let map;
 let markers = [];
 let infoWindow;
+let selectedPlaceDiv = null;
 
-// Initialize the Google Map
+// Initialize Google Map
 function initMap() {
   map = new google.maps.Map(document.getElementById("map"), {
     center: { lat: -31.9523, lng: 115.8613 },
@@ -108,18 +116,19 @@ function initMap() {
     .then(response => response.text())
     .then(csvText => {
       const data = csvText.split('\n').slice(1).map(line => {
-        const [name, lat, lng] = line.split(',');
-        return {title: name, lat: parseFloat(lat), lng: parseFloat(lng)};
+        const [name, lat, lng, parent] = line.split(',');
+        return {title: name, lat: parseFloat(lat), lng: parseFloat(lng), parent: parent || ''};
       });
       addPlaces(data);
     });
 }
 
-// Add markers and clickable list
+// Add markers and nested list
 function addPlaces(places) {
   const listDiv = document.getElementById("places-list");
+  const parentMap = {};
+
   places.forEach((place, index) => {
-    // Marker
     const marker = new google.maps.Marker({
       position: { lat: place.lat, lng: place.lng },
       map: map,
@@ -127,25 +136,41 @@ function addPlaces(places) {
       title: place.title
     });
 
-    // Show info window on marker click
     marker.addListener("click", () => {
       infoWindow.setContent(`<strong>${place.title}</strong>`);
       infoWindow.open(map, marker);
+      highlightList(index);
     });
 
     markers.push(marker);
 
-    // List item
     const placeDiv = document.createElement("div");
-    placeDiv.className = "place";
+    placeDiv.className = "place" + (place.parent ? " child" : "");
     placeDiv.innerHTML = `<span class="place-number">${index+1}</span>${place.title}`;
+
     placeDiv.addEventListener("click", () => {
+      document.getElementById("map").scrollIntoView({behavior: "smooth"});
       map.setCenter({ lat: place.lat, lng: place.lng });
       map.setZoom(16);
       infoWindow.setContent(`<strong>${place.title}</strong>`);
       infoWindow.open(map, marker);
+      highlightList(index);
     });
-    listDiv.appendChild(placeDiv);
+
+    if(place.parent && parentMap[place.parent]) {
+      parentMap[place.parent].appendChild(placeDiv);
+    } else if(!place.parent) {
+      listDiv.appendChild(placeDiv);
+      parentMap[place.title] = placeDiv;
+    }
+  });
+}
+
+// Highlight selected place
+function highlightList(selectedIndex) {
+  const listDiv = document.getElementById("places-list");
+  Array.from(listDiv.querySelectorAll(".place")).forEach((child, idx) => {
+    child.classList.toggle("selected", idx === selectedIndex);
   });
 }
 </script>
