@@ -33,10 +33,10 @@ h1 {
   height: 500px;
   border-radius: 18px;
   margin-bottom: 50px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
-/* ===== GRID LAYOUT ===== */
+/* GRID */
 
 #places-list {
   display: grid;
@@ -45,25 +45,21 @@ h1 {
   align-items: start;
 }
 
-/* Tablet */
 @media (max-width: 1024px) {
   #places-list {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
-/* Mobile */
 @media (max-width: 600px) {
   #places-list {
     grid-template-columns: 1fr;
   }
 }
 
-/* ===== PLACE BOX ===== */
-
 .place.parent {
   background: #FFFFFF;
-  border: 1px solid #D8CFC6;
+  border: 1px solid #E0D6CC;
   border-radius: 12px;
   padding: 16px;
   cursor: pointer;
@@ -72,27 +68,20 @@ h1 {
 
 .place.parent:hover {
   background: #F1E8DF;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.08);
 }
 
 .place-header {
   display: flex;
-  align-items: center;
   gap: 8px;
   margin-bottom: 10px;
 }
 
 .place-number {
-  color: #9C6B5C;
   font-weight: 600;
+  color: #A9746E;
   min-width: 24px;
 }
-
-.place-name {
-  flex: 1;
-}
-
-/* ===== CHILDREN (always visible) ===== */
 
 .children-container {
   display: flex;
@@ -145,9 +134,35 @@ document.addEventListener("DOMContentLoaded", function() {
   let parentCounter = 1;
 
   function initMap() {
+
+    // 🎨 SnazzyMaps-style theme (soft beige aesthetic)
+    const snazzyStyle = [
+      { elementType: "geometry", stylers: [{ color: "#ebe3cd" }] },
+      { elementType: "labels.text.fill", stylers: [{ color: "#523735" }] },
+      { elementType: "labels.text.stroke", stylers: [{ color: "#f5f1e6" }] },
+      {
+        featureType: "water",
+        elementType: "geometry.fill",
+        stylers: [{ color: "#c9d3d6" }]
+      },
+      {
+        featureType: "road",
+        elementType: "geometry",
+        stylers: [{ color: "#ffffff" }]
+      },
+      {
+        featureType: "poi",
+        elementType: "geometry",
+        stylers: [{ color: "#dfd2ae" }]
+      }
+    ];
+
     map = new google.maps.Map(document.getElementById("map"), {
       center: { lat: -31.9523, lng: 115.8613 },
-      zoom: 12
+      zoom: 12,
+      styles: snazzyStyle,
+      mapTypeControl: false,
+      streetViewControl: false
     });
 
     infoWindow = new google.maps.InfoWindow();
@@ -167,7 +182,6 @@ document.addEventListener("DOMContentLoaded", function() {
     const listDiv = document.getElementById("places-list");
     const childrenMap = {};
 
-    // Build children map
     data.forEach(row => {
       if(row.Parent) {
         if(!childrenMap[row.Parent]) childrenMap[row.Parent] = [];
@@ -175,7 +189,6 @@ document.addEventListener("DOMContentLoaded", function() {
       }
     });
 
-    // Add parents
     data.forEach(row => {
       if(!row.Parent) {
 
@@ -188,7 +201,6 @@ document.addEventListener("DOMContentLoaded", function() {
           title: row.Name
         });
 
-        // Marker click → show info
         marker.addListener("click", function() {
           infoWindow.setContent("<strong>" + row.Name + "</strong>");
           infoWindow.open(map, marker);
@@ -205,14 +217,12 @@ document.addEventListener("DOMContentLoaded", function() {
         number.textContent = markerLabel;
 
         const name = document.createElement("span");
-        name.className = "place-name";
         name.textContent = row.Name;
 
         header.appendChild(number);
         header.appendChild(name);
         parentDiv.appendChild(header);
 
-        // Add children automatically
         if(childrenMap[row.Name]) {
 
           const childrenContainer = document.createElement("div");
@@ -230,7 +240,6 @@ document.addEventListener("DOMContentLoaded", function() {
           parentDiv.appendChild(childrenContainer);
         }
 
-        // List click → scroll to top + focus map + open info
         parentDiv.onclick = function() {
           window.scrollTo({ top: 0, behavior: "smooth" });
           map.setCenter({ lat: parseFloat(row.Lat), lng: parseFloat(row.Lng) });
