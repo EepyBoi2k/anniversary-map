@@ -74,27 +74,12 @@ h1 {
 .place-header {
   display: flex;
   gap: 8px;
-  margin-bottom: 10px;
 }
 
 .place-number {
   font-weight: 600;
   color: #A9746E;
   min-width: 24px;
-}
-
-.children-container {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.place.child {
-  padding: 6px 10px;
-  font-size: 0.9em;
-  background: #FAF5F0;
-  border-radius: 6px;
-  color: #6E6E6E;
 }
 
 footer {
@@ -135,7 +120,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
   function initMap() {
 
-    // ✅ Your exact SnazzyMaps style
     const snazzyStyle = [
       {"featureType":"all","elementType":"labels","stylers":[{"visibility":"off"}]},
       {"featureType":"poi.park","elementType":"geometry.fill","stylers":[{"color":"#aadd55"}]},
@@ -170,6 +154,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const listDiv = document.getElementById("places-list");
     const childrenMap = {};
 
+    // Build children map
     data.forEach(row => {
       if(row.Parent) {
         if(!childrenMap[row.Parent]) childrenMap[row.Parent] = [];
@@ -189,11 +174,32 @@ document.addEventListener("DOMContentLoaded", function() {
           title: row.Name
         });
 
+        // Build info content (parent + children)
+        function buildInfoContent() {
+          let html = "<div style='font-family:Inter,sans-serif'>";
+          html += "<strong style='font-size:16px'>" + row.Name + "</strong>";
+
+          if(childrenMap[row.Name]) {
+            const sortedChildren = childrenMap[row.Name]
+              .sort((a,b) => a.Name.localeCompare(b.Name));
+
+            html += "<ul style='margin-top:8px;padding-left:18px'>";
+            sortedChildren.forEach(child => {
+              html += "<li>" + child.Name + "</li>";
+            });
+            html += "</ul>";
+          }
+
+          html += "</div>";
+          return html;
+        }
+
         marker.addListener("click", function() {
-          infoWindow.setContent("<strong>" + row.Name + "</strong>");
+          infoWindow.setContent(buildInfoContent());
           infoWindow.open(map, marker);
         });
 
+        // Create list item (PARENT ONLY)
         const parentDiv = document.createElement("div");
         parentDiv.className = "place parent";
 
@@ -211,28 +217,12 @@ document.addEventListener("DOMContentLoaded", function() {
         header.appendChild(name);
         parentDiv.appendChild(header);
 
-        if(childrenMap[row.Name]) {
-
-          const childrenContainer = document.createElement("div");
-          childrenContainer.className = "children-container";
-
-          childrenMap[row.Name]
-            .sort((a,b) => a.Name.localeCompare(b.Name))
-            .forEach(child => {
-              const childDiv = document.createElement("div");
-              childDiv.className = "place child";
-              childDiv.textContent = child.Name;
-              childrenContainer.appendChild(childDiv);
-            });
-
-          parentDiv.appendChild(childrenContainer);
-        }
-
+        // List click → scroll to top + open info
         parentDiv.onclick = function() {
           window.scrollTo({ top: 0, behavior: "smooth" });
           map.setCenter({ lat: parseFloat(row.Lat), lng: parseFloat(row.Lng) });
           map.setZoom(16);
-          infoWindow.setContent("<strong>" + row.Name + "</strong>");
+          infoWindow.setContent(buildInfoContent());
           infoWindow.open(map, marker);
         };
 
