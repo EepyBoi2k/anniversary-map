@@ -4,14 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Just The Two Of Us</title>
+
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Playfair+Display:wght@500&display=swap" rel="stylesheet">
+
 <style>
 body {
   margin: 0;
   font-family: 'Inter', sans-serif;
   background: #F8F4F0;
   color: #2E2E2E;
-  scroll-behavior: smooth;
 }
 
 .container {
@@ -23,7 +24,6 @@ body {
 h1 {
   font-family: 'Playfair Display', serif;
   text-align: center;
-  font-weight: 500;
   margin-bottom: 40px;
   color: #8B5E3C;
 }
@@ -32,86 +32,112 @@ h1 {
   width: 100%;
   height: 500px;
   border-radius: 18px;
-  overflow: hidden;
   margin-bottom: 50px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
-/* 4-column grid for places */
+/* ===== MASONRY LAYOUT ===== */
+
 #places-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 16px;
+  column-count: 4;
+  column-gap: 18px;
 }
 
-/* Parent place box */
-.place.parent { 
-  padding: 14px 16px;
-  border-radius: 10px;
+/* Tablet */
+@media (max-width: 1024px) {
+  #places-list {
+    column-count: 2;
+  }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  #places-list {
+    column-count: 1;
+  }
+}
+
+/* ===== PLACE BOX ===== */
+
+.place.parent {
+  break-inside: avoid;
+  margin-bottom: 18px;
   background: #FFFFFF;
   border: 1px solid #D8CFC6;
-  transition: background 0.2s ease, box-shadow 0.2s ease;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
+  border-radius: 12px;
+  padding: 16px;
   position: relative;
-  width: 100%;
-  box-sizing: border-box;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.place.parent:hover { 
+.place.parent:hover {
   background: #F1E8DF;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
 }
 
-.place-number { 
-  color: #9C6B5C; 
-  font-weight: 600; 
-  margin-right: 6px; 
+.place-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
+
+.place-number {
+  color: #9C6B5C;
+  font-weight: 600;
+  min-width: 24px;
+}
+
+.place-name {
+  flex: 1;
+}
+
+/* ===== CHILDREN ===== */
 
 .children-container {
-  margin-top: 6px;
+  margin-top: 10px;
   display: none;
   flex-direction: column;
-  gap: 2px;
-  margin-left: 12px;
+  gap: 6px;
 }
 
 .place.child {
-  padding: 4px 12px;
-  font-size: 0.95em;
-  color: #6E6E6E;
+  padding: 6px 10px;
+  font-size: 0.9em;
   background: #FAF5F0;
   border-radius: 6px;
+  color: #6E6E6E;
 }
 
-/* Toggle button fixed at top-right */
+/* ===== TOGGLE BUTTON ===== */
+
 .toggle-btn {
   position: absolute;
-  right: 10px;
-  top: 10px;
-  background: #D8CFC6;
-  border: none;
-  border-radius: 50%;
+  right: 12px;
+  top: 12px;
   width: 26px;
   height: 26px;
-  cursor: pointer;
-  font-weight: bold;
+  border-radius: 50%;
+  border: none;
+  background: #D8CFC6;
   color: #8B5E3C;
-}
-.toggle-btn:hover { 
-  background: #C5B2A0; 
+  font-weight: bold;
+  cursor: pointer;
 }
 
-footer { 
-  text-align: center; 
-  margin-top: 60px; 
-  font-size: 14px; 
-  color: #8A8A8A; 
+.toggle-btn:hover {
+  background: #C5B2A0;
+}
+
+footer {
+  text-align: center;
+  margin-top: 60px;
+  font-size: 14px;
+  color: #8A8A8A;
 }
 </style>
 </head>
+
 <body>
 
 <div id="main-content" style="display:none">
@@ -127,28 +153,22 @@ footer {
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-  // Password protection
-  let password = prompt("Enter the password to view the map:");
+
+  let password = prompt("Enter the password:");
   if(password !== "march18") {
-      document.body.innerHTML = "<h2 style='text-align:center;margin-top:50px;'>Access Denied</h2>";
-      return;
+    document.body.innerHTML = "<h2 style='text-align:center;margin-top:50px;'>Access Denied</h2>";
+    return;
   }
+
   document.getElementById("main-content").style.display = "block";
 
-  let map, markers = [], infoWindow;
+  let map, infoWindow;
+  let parentCounter = 1;
 
   function initMap() {
     map = new google.maps.Map(document.getElementById("map"), {
       center: { lat: -31.9523, lng: 115.8613 },
-      zoom: 12,
-      styles: [
-        {"featureType":"all","elementType":"labels","stylers":[{"visibility":"off"}]},
-        {"featureType":"poi.park","elementType":"geometry.fill","stylers":[{"color":"#aadd55"}]},
-        {"featureType":"road.highway","elementType":"labels","stylers":[{"visibility":"off"},{"hue":"#ff0000"}]},
-        {"featureType":"road.arterial","elementType":"labels.text","stylers":[{"visibility":"on"}]},
-        {"featureType":"road.local","elementType":"labels.text","stylers":[{"visibility":"on"}]},
-        {"featureType":"water","elementType":"geometry.fill","stylers":[{"color":"#0099dd"}]}
-      ]
+      zoom: 12
     });
 
     infoWindow = new google.maps.InfoWindow();
@@ -158,103 +178,94 @@ document.addEventListener("DOMContentLoaded", function() {
       header: true,
       skipEmptyLines: true,
       complete: function(results) {
-        const data = results.data.map(row => ({
-          Name: row.Name ? row.Name.trim() : "Unnamed",
-          Lat: parseFloat(row.Lat || row.lat),
-          Lng: parseFloat(row.Lng || row.lng),
-          Parent: row.Parent ? row.Parent.trim() : ""
-        }));
-        addPlaces(data);
+        addPlaces(results.data);
       }
     });
   }
 
-  function addPlaces(places) {
+  function addPlaces(data) {
+
     const listDiv = document.getElementById("places-list");
     const childrenMap = {};
-    let parentCounter = 1;
 
-    // Build children map
-    places.forEach(place => {
-        if(place.Parent){
-            if(!childrenMap[place.Parent]) childrenMap[place.Parent] = [];
-            childrenMap[place.Parent].push(place);
-        }
+    data.forEach(row => {
+      if(row.Parent) {
+        if(!childrenMap[row.Parent]) childrenMap[row.Parent] = [];
+        childrenMap[row.Parent].push(row);
+      }
     });
 
-    // Sort children alphabetically
-    for(let p in childrenMap){
-        childrenMap[p].sort((a,b) => a.Name.localeCompare(b.Name));
-    }
+    data.forEach(row => {
+      if(!row.Parent) {
 
-    places.forEach(place => {
-        if(!place.Parent){ 
-            const markerLabel = String(parentCounter++);
-            const marker = new google.maps.Marker({
-                position: { lat: place.Lat, lng: place.Lng },
-                map: map,
-                label: { text: markerLabel, color: "#ffffff" },
-                title: place.Name
-            });
-            markers.push(marker);
+        const markerLabel = String(parentCounter++);
+        const marker = new google.maps.Marker({
+          position: { lat: parseFloat(row.Lat), lng: parseFloat(row.Lng) },
+          map: map,
+          label: markerLabel,
+          title: row.Name
+        });
 
-            // Parent block
-            const parentDiv = document.createElement("div");
-            parentDiv.className = "place parent";
+        const parentDiv = document.createElement("div");
+        parentDiv.className = "place parent";
 
-            const numberSpan = document.createElement("span");
-            numberSpan.className = "place-number";
-            numberSpan.textContent = markerLabel;
-            parentDiv.appendChild(numberSpan);
+        const header = document.createElement("div");
+        header.className = "place-header";
 
-            const nameSpan = document.createElement("span");
-            nameSpan.className = "place-name";
-            nameSpan.textContent = place.Name;
-            parentDiv.appendChild(nameSpan);
+        const number = document.createElement("span");
+        number.className = "place-number";
+        number.textContent = markerLabel;
 
-            // Drop-down children
-            let childrenContainer = null;
-            if(childrenMap[place.Name]){
-                childrenContainer = document.createElement("div");
-                childrenContainer.className = "children-container";
-                childrenMap[place.Name].forEach(c=>{
-                    const childDiv = document.createElement("div");
-                    childDiv.className = "place child";
-                    childDiv.textContent = c.Name;
-                    childrenContainer.appendChild(childDiv);
-                });
-                parentDiv.appendChild(childrenContainer);
+        const name = document.createElement("span");
+        name.className = "place-name";
+        name.textContent = row.Name;
 
-                // Toggle button
-                const toggleBtn = document.createElement("button");
-                toggleBtn.className = "toggle-btn";
-                toggleBtn.textContent = "+";
-                toggleBtn.addEventListener("click", (e)=>{
-                    e.stopPropagation();
-                    if(childrenContainer.style.display === "flex"){
-                        childrenContainer.style.display = "none";
-                        toggleBtn.textContent = "+";
-                    } else {
-                        childrenContainer.style.display = "flex";
-                        toggleBtn.textContent = "−";
-                    }
-                });
-                parentDiv.appendChild(toggleBtn);
+        header.appendChild(number);
+        header.appendChild(name);
+        parentDiv.appendChild(header);
+
+        if(childrenMap[row.Name]) {
+
+          const childrenContainer = document.createElement("div");
+          childrenContainer.className = "children-container";
+
+          childrenMap[row.Name].forEach(child => {
+            const childDiv = document.createElement("div");
+            childDiv.className = "place child";
+            childDiv.textContent = child.Name;
+            childrenContainer.appendChild(childDiv);
+          });
+
+          parentDiv.appendChild(childrenContainer);
+
+          const toggle = document.createElement("button");
+          toggle.className = "toggle-btn";
+          toggle.textContent = "+";
+
+          toggle.onclick = function(e) {
+            e.stopPropagation();
+            if(childrenContainer.style.display === "flex") {
+              childrenContainer.style.display = "none";
+              toggle.textContent = "+";
+            } else {
+              childrenContainer.style.display = "flex";
+              toggle.textContent = "−";
             }
+          };
 
-            // Click parent block
-            parentDiv.addEventListener("click", () => {
-                document.getElementById("map").scrollIntoView({ behavior: "smooth" });
-                map.setCenter({ lat: place.Lat, lng: place.Lng });
-                map.setZoom(16);
-
-                const childrenNames = childrenMap[place.Name] ? childrenMap[place.Name].map(c => c.Name).join("<br>") : "";
-                infoWindow.setContent(`<strong>${place.Name}</strong>${childrenNames ? "<br>" + childrenNames : ""}`);
-                infoWindow.open(map, marker);
-            });
-
-            listDiv.appendChild(parentDiv);
+          parentDiv.appendChild(toggle);
         }
+
+        parentDiv.onclick = function() {
+          document.getElementById("map").scrollIntoView({behavior: "smooth"});
+          map.setCenter({ lat: parseFloat(row.Lat), lng: parseFloat(row.Lng) });
+          map.setZoom(16);
+          infoWindow.setContent("<strong>" + row.Name + "</strong>");
+          infoWindow.open(map, marker);
+        };
+
+        listDiv.appendChild(parentDiv);
+      }
     });
   }
 
