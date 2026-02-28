@@ -36,37 +36,36 @@ h1 {
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
-/* ===== MASONRY LAYOUT ===== */
+/* ===== GRID LAYOUT ===== */
 
 #places-list {
-  column-count: 4;
-  column-gap: 18px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  align-items: start;
 }
 
 /* Tablet */
 @media (max-width: 1024px) {
   #places-list {
-    column-count: 2;
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
 /* Mobile */
 @media (max-width: 600px) {
   #places-list {
-    column-count: 1;
+    grid-template-columns: 1fr;
   }
 }
 
 /* ===== PLACE BOX ===== */
 
 .place.parent {
-  break-inside: avoid;
-  margin-bottom: 18px;
   background: #FFFFFF;
   border: 1px solid #D8CFC6;
   border-radius: 12px;
   padding: 16px;
-  position: relative;
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -80,6 +79,7 @@ h1 {
   display: flex;
   align-items: center;
   gap: 8px;
+  margin-bottom: 10px;
 }
 
 .place-number {
@@ -92,11 +92,10 @@ h1 {
   flex: 1;
 }
 
-/* ===== CHILDREN ===== */
+/* ===== CHILDREN (always visible) ===== */
 
 .children-container {
-  margin-top: 10px;
-  display: none;
+  display: flex;
   flex-direction: column;
   gap: 6px;
 }
@@ -107,26 +106,6 @@ h1 {
   background: #FAF5F0;
   border-radius: 6px;
   color: #6E6E6E;
-}
-
-/* ===== TOGGLE BUTTON ===== */
-
-.toggle-btn {
-  position: absolute;
-  right: 12px;
-  top: 12px;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  border: none;
-  background: #D8CFC6;
-  color: #8B5E3C;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-.toggle-btn:hover {
-  background: #C5B2A0;
 }
 
 footer {
@@ -188,6 +167,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const listDiv = document.getElementById("places-list");
     const childrenMap = {};
 
+    // Build children map
     data.forEach(row => {
       if(row.Parent) {
         if(!childrenMap[row.Parent]) childrenMap[row.Parent] = [];
@@ -195,15 +175,23 @@ document.addEventListener("DOMContentLoaded", function() {
       }
     });
 
+    // Add parents
     data.forEach(row => {
       if(!row.Parent) {
 
         const markerLabel = String(parentCounter++);
+
         const marker = new google.maps.Marker({
           position: { lat: parseFloat(row.Lat), lng: parseFloat(row.Lng) },
           map: map,
           label: markerLabel,
           title: row.Name
+        });
+
+        // Marker click → show info
+        marker.addListener("click", function() {
+          infoWindow.setContent("<strong>" + row.Name + "</strong>");
+          infoWindow.open(map, marker);
         });
 
         const parentDiv = document.createElement("div");
@@ -224,40 +212,27 @@ document.addEventListener("DOMContentLoaded", function() {
         header.appendChild(name);
         parentDiv.appendChild(header);
 
+        // Add children automatically
         if(childrenMap[row.Name]) {
 
           const childrenContainer = document.createElement("div");
           childrenContainer.className = "children-container";
 
-          childrenMap[row.Name].forEach(child => {
-            const childDiv = document.createElement("div");
-            childDiv.className = "place child";
-            childDiv.textContent = child.Name;
-            childrenContainer.appendChild(childDiv);
-          });
+          childrenMap[row.Name]
+            .sort((a,b) => a.Name.localeCompare(b.Name))
+            .forEach(child => {
+              const childDiv = document.createElement("div");
+              childDiv.className = "place child";
+              childDiv.textContent = child.Name;
+              childrenContainer.appendChild(childDiv);
+            });
 
           parentDiv.appendChild(childrenContainer);
-
-          const toggle = document.createElement("button");
-          toggle.className = "toggle-btn";
-          toggle.textContent = "+";
-
-          toggle.onclick = function(e) {
-            e.stopPropagation();
-            if(childrenContainer.style.display === "flex") {
-              childrenContainer.style.display = "none";
-              toggle.textContent = "+";
-            } else {
-              childrenContainer.style.display = "flex";
-              toggle.textContent = "−";
-            }
-          };
-
-          parentDiv.appendChild(toggle);
         }
 
+        // List click → scroll to top + focus map + open info
         parentDiv.onclick = function() {
-          document.getElementById("map").scrollIntoView({behavior: "smooth"});
+          window.scrollTo({ top: 0, behavior: "smooth" });
           map.setCenter({ lat: parseFloat(row.Lat), lng: parseFloat(row.Lng) });
           map.setZoom(16);
           infoWindow.setContent("<strong>" + row.Name + "</strong>");
