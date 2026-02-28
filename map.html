@@ -135,26 +135,14 @@ document.addEventListener("DOMContentLoaded", function() {
 
   function initMap() {
 
-    // 🎨 SnazzyMaps-style theme (soft beige aesthetic)
+    // ✅ Your exact SnazzyMaps style
     const snazzyStyle = [
-      { elementType: "geometry", stylers: [{ color: "#ebe3cd" }] },
-      { elementType: "labels.text.fill", stylers: [{ color: "#523735" }] },
-      { elementType: "labels.text.stroke", stylers: [{ color: "#f5f1e6" }] },
-      {
-        featureType: "water",
-        elementType: "geometry.fill",
-        stylers: [{ color: "#c9d3d6" }]
-      },
-      {
-        featureType: "road",
-        elementType: "geometry",
-        stylers: [{ color: "#ffffff" }]
-      },
-      {
-        featureType: "poi",
-        elementType: "geometry",
-        stylers: [{ color: "#dfd2ae" }]
-      }
+      {"featureType":"all","elementType":"labels","stylers":[{"visibility":"off"}]},
+      {"featureType":"poi.park","elementType":"geometry.fill","stylers":[{"color":"#aadd55"}]},
+      {"featureType":"road.highway","elementType":"labels","stylers":[{"visibility":"off"},{"hue":"#ff0000"}]},
+      {"featureType":"road.arterial","elementType":"labels.text","stylers":[{"visibility":"on"}]},
+      {"featureType":"road.local","elementType":"labels.text","stylers":[{"visibility":"on"}]},
+      {"featureType":"water","elementType":"geometry.fill","stylers":[{"color":"#0099dd"}]}
     ];
 
     map = new google.maps.Map(document.getElementById("map"), {
