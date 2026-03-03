@@ -8,6 +8,14 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
 
 <style>
+
+@font-face {
+  font-family: 'Caviar Dreams';
+  src: url('CaviarDreams.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
 body {
   margin: 0;
   font-family: 'Inter', sans-serif;
@@ -22,12 +30,12 @@ body {
 }
 
 h1 {
-  font-family: 'Playfair Display', serif;
+  font-family: 'Caviar Dreams', sans-serif;
   text-align: center;
   margin-bottom: 50px;
-  font-size: 40px;
-  color: #A9746E;
-  letter-spacing: 1px;
+  font-size: 44px;
+  letter-spacing: 3px;
+  color: #B07D74;
 }
 
 #map {
@@ -191,23 +199,52 @@ document.addEventListener("DOMContentLoaded", function() {
         });
 
         function buildInfoContent() {
-          let html = "<div style='font-family:Inter,sans-serif'>";
-          html += "<strong style='font-size:16px'>" + row.Name + "</strong>";
 
-          if(childrenMap[row.Name]) {
-            const sortedChildren = childrenMap[row.Name]
-              .sort((a,b) => a.Name.localeCompare(b.Name));
+  let html = `
+    <div style="
+      font-family: 'Inter', sans-serif;
+      padding: 10px 6px;
+      max-width: 240px;
+    ">
+      <div style="
+        font-family: 'Caviar Dreams', sans-serif;
+        font-size: 18px;
+        letter-spacing: 1px;
+        color: #B07D74;
+        margin-bottom: 8px;
+      ">
+        ${row.Name}
+      </div>
+  `;
 
-            html += "<ul style='margin-top:8px;padding-left:18px'>";
-            sortedChildren.forEach(child => {
-              html += "<li>" + child.Name + "</li>";
-            });
-            html += "</ul>";
-          }
+  if (childrenMap[row.Name]) {
 
-          html += "</div>";
-          return html;
-        }
+    const sortedChildren = childrenMap[row.Name]
+      .sort((a, b) => a.Name.localeCompare(b.Name));
+
+    html += `
+      <ul style="
+        margin: 6px 0 0 0;
+        padding-left: 18px;
+        line-height: 1.6;
+        font-size: 13px;
+        color: #6F5E5A;
+        border-top: 1px solid #EADCD6;
+        padding-top: 8px;
+      ">
+    `;
+
+    sortedChildren.forEach(child => {
+      html += `<li>${child.Name}</li>`;
+    });
+
+    html += `</ul>`;
+  }
+
+  html += `</div>`;
+
+  return html;
+}
 
         const parentDiv = document.createElement("div");
         parentDiv.className = "place parent";
