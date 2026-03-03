@@ -11,7 +11,7 @@
 body {
   margin: 0;
   font-family: 'Inter', sans-serif;
-  background: #D8F3DC;
+  background-image: linear-gradient(to bottom, #FFFFFF, #D8F3DC);
 }
 
 .container {
@@ -23,7 +23,7 @@ body {
 h1 {
     font-family: 'Caviar Dreams', sans-serif;
     text-align: center;
-    padding: 20px 60px;
+    padding-top: 20px;
     margin: 0;
     color: #1B4332;
     letter-spacing: 1px;
@@ -36,9 +36,7 @@ h1 {
   margin-bottom: 40px;
   box-shadow: 0 8px 25px rgba(52, 78, 65, 0.25);
 }
-
-/* GRID */
-
+  
 #places-list {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -101,7 +99,8 @@ h1 {
 
 footer {
   text-align: center;
-  margin-top: 80px;
+  margin-top: 40px;
+  margin-bottom: 40px;
   font-size: 14px;
   color: #1B4332;
 }
@@ -189,15 +188,13 @@ document.addEventListener("DOMContentLoaded", function() {
           map: map,
           label: {
             text: markerLabel,
-            color: "#FFFFFF"
+            color: "#000000"
           },
           icon: {
             path: google.maps.SymbolPath.CIRCLE,
             scale: 12,
             fillColor: "#FF7F7F",
             fillOpacity: 1,
-            strokeColor: "#000000",
-            strokeWeight: 1
           },
           title: row.Name
         });
@@ -274,5 +271,6 @@ src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAVImtk_O82lOoIWlJGkYM_sMw
 
 </body>
 </html>
+
 
 
