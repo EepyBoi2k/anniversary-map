@@ -5,31 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Just The Two Of Us</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+<link href="https://fonts.cdnfonts.com/css/caviar-dreams" rel="stylesheet">
 
 <style>
-
-.fade-info {
-  opacity: 0;
-  transition: opacity 0.35s ease;
-}
-
-.fade-info.show {
-  opacity: 1;
-}
-
-@font-face {
-  font-family: 'Caviar Dreams';
-  src: url('CaviarDreams.ttf') format('truetype');
-  font-weight: normal;
-  font-style: normal;
-}
-
 body {
   margin: 0;
   font-family: 'Inter', sans-serif;
-  background: linear-gradient(to bottom, #FDF8F5, #F6EEE8);
-  color: #3A2E2A;
+  background: linear-gradient(to bottom, #DAD7CD, #A3B18A);
+  color: #344E41;
 }
 
 .container {
@@ -39,12 +22,13 @@ body {
 }
 
 h1 {
-  font-family: 'Caviar Dreams', sans-serif;
-  text-align: center;
-  margin-bottom: 50px;
-  font-size: 44px;
-  letter-spacing: 3px;
-  color: #B07D74;
+    font-family: 'Caviar Dreams', sans-serif;
+    text-align: center;
+    padding: 20px;
+    margin: 0;
+    background-color: #3A5A40;
+    color: #DAD7CD;
+    letter-spacing: 1px;
 }
 
 #map {
@@ -52,7 +36,7 @@ h1 {
   height: 500px;
   border-radius: 22px;
   margin-bottom: 60px;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+  box-shadow: 0 8px 25px rgba(52, 78, 65, 0.25);
 }
 
 /* GRID */
@@ -75,30 +59,29 @@ h1 {
     grid-template-columns: 1fr;
   }
 }
-
-/* PLACE BOX */
-
 .place.parent {
-  background: #FFFFFF;
-  border: 1px solid #E7D9CF;
+  background: #DAD7CD;
+  border: 1px solid #A3B18A;
   border-radius: 16px;
   padding: 20px;
   cursor: pointer;
   transition: all 0.25s ease;
   display: flex;
   align-items: center;
-  min-height: 90px;   /* Equal height base */
+  min-height: 90px;
 }
 
 .place.parent:hover {
   transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(169,116,110,0.2);
+  box-shadow: 0 8px 20px rgba(88, 129, 87, 0.3);
+  background: #A3B18A;
 }
 
 .place.active {
-  background: #FBEDEA;
-  border: 2px solid #C67C73;
-  box-shadow: 0 8px 25px rgba(198,124,115,0.35);
+  background: #588157;
+  border: 2px solid #3A5A40;
+  box-shadow: 0 8px 25px rgba(58, 90, 64, 0.35);
+  color: white;
 }
 
 .place-header {
@@ -110,7 +93,7 @@ h1 {
 
 .place-number {
   font-weight: 700;
-  color: #C67C73;
+  color: #3A5A40;
   font-size: 18px;
   min-width: 30px;
 }
@@ -119,7 +102,7 @@ footer {
   text-align: center;
   margin-top: 80px;
   font-size: 14px;
-  color: #9C8A84;
+  color: #344E41;
 }
 </style>
 </head>
@@ -131,7 +114,7 @@ footer {
     <h1>Just The Two Of Us</h1>
     <div id="map"></div>
     <div id="places-list"></div>
-    <footer>Every place, every memory, every moment.</footer>
+    <footer>Built quietly over two years.</footer>
   </div>
 </div>
 
@@ -142,7 +125,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
   let password = prompt("Enter the password:");
   if(password !== "march18") {
-    document.body.innerHTML = "<h2 style='text-align:center;margin-top:50px;'>Access Denied</h2>";
+    document.body.innerHTML = "<h2 style='text-align:center;margin-top:50px;color:#344E41;'>Access Denied</h2>";
     return;
   }
 
@@ -154,15 +137,15 @@ document.addEventListener("DOMContentLoaded", function() {
 
   function initMap() {
 
-const snazzyStyle = [
+    const snazzyStyle = [
       {"featureType":"all","elementType":"labels","stylers":[{"visibility":"off"}]},
-      {"featureType":"poi.park","elementType":"geometry.fill","stylers":[{"color":"#aadd55"}]},
+      {"featureType":"poi.park","elementType":"geometry.fill","stylers":[{"color":"#A3B18A"}]},
       {"featureType":"road.highway","elementType":"labels","stylers":[{"visibility":"off"}]},
-      {"featureType":"road.arterial","elementType":"labels.text","stylers":[{"visibility":"on"}]},
-      {"featureType":"road.local","elementType":"labels.text","stylers":[{"visibility":"on"}]},
-      {"featureType":"water","elementType":"geometry.fill","stylers":[{"color":"#0099dd"}]}
+      {"featureType":"road.arterial","elementType":"labels.text","stylers":[{"visibility":"on"},{"color":"#344E41"}]},
+      {"featureType":"road.local","elementType":"labels.text","stylers":[{"visibility":"on"},{"color":"#344E41"}]},
+      {"featureType":"water","elementType":"geometry.fill","stylers":[{"color":"#588157"}]},
+      {"featureType":"landscape","elementType":"geometry.fill","stylers":[{"color":"#DAD7CD"}]}
     ];
-];
 
     map = new google.maps.Map(document.getElementById("map"), {
       center: { lat: -31.9523, lng: 115.8613 },
@@ -204,57 +187,39 @@ const snazzyStyle = [
         const marker = new google.maps.Marker({
           position: { lat: parseFloat(row.Lat), lng: parseFloat(row.Lng) },
           map: map,
-          label: markerLabel,
+          label: {
+            text: markerLabel,
+            color: "#ffffff"
+          },
+          icon: {
+            path: google.maps.SymbolPath.CIRCLE,
+            scale: 12,
+            fillColor: "#3A5A40",
+            fillOpacity: 1,
+            strokeColor: "#344E41",
+            strokeWeight: 2
+          },
           title: row.Name
         });
 
         function buildInfoContent() {
+          let html = "<div style='font-family:Inter,sans-serif;color:#344E41'>";
+          html += "<strong style='font-size:16px;color:#3A5A40'>" + row.Name + "</strong>";
 
-  let html = `
-    <div style="
-      font-family: 'Inter', sans-serif;
-      padding: 10px 6px;
-      max-width: 240px;
-    ">
-      <div style="
-        font-family: 'Caviar Dreams', sans-serif;
-        font-size: 18px;
-        letter-spacing: 1px;
-        color: #B07D74;
-        margin-bottom: 8px;
-      ">
-        ${row.Name}
-      </div>
-  `;
+          if(childrenMap[row.Name]) {
+            const sortedChildren = childrenMap[row.Name]
+              .sort((a,b) => a.Name.localeCompare(b.Name));
 
-  if (childrenMap[row.Name]) {
+            html += "<ul style='margin-top:8px;padding-left:18px'>";
+            sortedChildren.forEach(child => {
+              html += "<li>" + child.Name + "</li>";
+            });
+            html += "</ul>";
+          }
 
-    const sortedChildren = childrenMap[row.Name]
-      .sort((a, b) => a.Name.localeCompare(b.Name));
-
-    html += `
-      <ul style="
-        margin: 6px 0 0 0;
-        padding-left: 18px;
-        line-height: 1.6;
-        font-size: 13px;
-        color: #6F5E5A;
-        border-top: 1px solid #EADCD6;
-        padding-top: 8px;
-      ">
-    `;
-
-    sortedChildren.forEach(child => {
-      html += `<li>${child.Name}</li>`;
-    });
-
-    html += `</ul>`;
-  }
-
-  html += `</div>`;
-
-  return html;
-}
+          html += "</div>";
+          return html;
+        }
 
         const parentDiv = document.createElement("div");
         parentDiv.className = "place parent";
@@ -266,22 +231,8 @@ const snazzyStyle = [
         }
 
         marker.addListener("click", function() {
-          function openWithFade(marker, parentDiv) {
-
-  const container = document.createElement("div");
-  container.className = "fade-info";
-  container.innerHTML = buildInfoContent();
-
-  infoWindow.setContent(container);
-  infoWindow.open(map, marker);
-
-  // Trigger fade
-  setTimeout(() => {
-    container.classList.add("show");
-  }, 50);
-
-  setActive(parentDiv);
-}
+          infoWindow.setContent(buildInfoContent());
+          infoWindow.open(map, marker);
           setActive(parentDiv);
         });
 
@@ -303,22 +254,8 @@ const snazzyStyle = [
           window.scrollTo({ top: 0, behavior: "smooth" });
           map.setCenter({ lat: parseFloat(row.Lat), lng: parseFloat(row.Lng) });
           map.setZoom(16);
-          function openWithFade(marker, parentDiv) {
-
-  const container = document.createElement("div");
-  container.className = "fade-info";
-  container.innerHTML = buildInfoContent();
-
-  infoWindow.setContent(container);
-  infoWindow.open(map, marker);
-
-  // Trigger fade
-  setTimeout(() => {
-    container.classList.add("show");
-  }, 50);
-
-  setActive(parentDiv);
-}
+          infoWindow.setContent(buildInfoContent());
+          infoWindow.open(map, marker);
           setActive(parentDiv);
         };
 
