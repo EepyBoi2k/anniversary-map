@@ -186,12 +186,12 @@ document.addEventListener("DOMContentLoaded", function() {
           map: map,
           label: {
             text: markerLabel,
-            color: "#FFFFFF"
+            color: "#000000"
           },
           icon: {
             path: google.maps.SymbolPath.CIRCLE,
             scale: 12,
-            fillColor: "#588157",
+            fillColor: "#90a955",
             fillOpacity: 1,
             strokeWeight: 1,
             strokeColor: "#000000"
@@ -209,13 +209,28 @@ document.addEventListener("DOMContentLoaded", function() {
       padding: 12px 16px;
       max-width: 250px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      position: relative;
     ">
-      <strong style="
-        font-size: 18px;
-        color: #111;
-        display: block;
+      <div style="
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
         margin-bottom: 8px;
-      ">${row.Name}</strong>
+      ">
+        <strong style="
+          font-size: 18px;
+          color: #111;
+        ">${row.Name}</strong>
+        <span style="
+          cursor: pointer;
+          font-weight: bold;
+          font-size: 16px;
+          color: #888;
+          transition: color 0.2s;
+        " onclick="this.parentElement.parentElement.style.display='none'" 
+           onmouseover="this.style.color='#f00'" 
+           onmouseout="this.style.color='#888'">✖</span>
+      </div>
   `;
 
   if(childrenMap[row.Name]) {
@@ -244,6 +259,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
   html += "</div>";
   return html;
+}
 }
 
         const parentDiv = document.createElement("div");
@@ -299,4 +315,3 @@ src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAVImtk_O82lOoIWlJGkYM_sMw
 
 </body>
 </html>
-
