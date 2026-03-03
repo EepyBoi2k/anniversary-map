@@ -131,7 +131,7 @@ footer {
     <h1>Just The Two Of Us</h1>
     <div id="map"></div>
     <div id="places-list"></div>
-    <footer>Built quietly over two years.</footer>
+    <footer>Every place, every memory, every moment.</footer>
   </div>
 </div>
 
@@ -154,58 +154,14 @@ document.addEventListener("DOMContentLoaded", function() {
 
   function initMap() {
 
-    const snazzyStyle = [
-
-  // Base land
-  {
-    "featureType": "landscape",
-    "elementType": "geometry",
-    "stylers": [{ "color": "#DAD7CD" }]
-  },
-
-  // Water
-  {
-    "featureType": "water",
-    "elementType": "geometry.fill",
-    "stylers": [{ "color": "#A3B18A" }]
-  },
-
-  // Roads
-  {
-    "featureType": "road",
-    "elementType": "geometry",
-    "stylers": [{ "color": "#FFFFFF" }]
-  },
-  {
-    "featureType": "road.arterial",
-    "elementType": "geometry",
-    "stylers": [{ "color": "#A3B18A" }]
-  },
-  {
-    "featureType": "road.highway",
-    "elementType": "geometry",
-    "stylers": [{ "color": "#588157" }]
-  },
-
-  // Labels
-  {
-    "featureType": "all",
-    "elementType": "labels.text.fill",
-    "stylers": [{ "color": "#344E41" }]
-  },
-  {
-    "featureType": "all",
-    "elementType": "labels.text.stroke",
-    "stylers": [{ "color": "#DAD7CD" }]
-  },
-
-  // Parks
-  {
-    "featureType": "poi.park",
-    "elementType": "geometry.fill",
-    "stylers": [{ "color": "#A3B18A" }]
-  }
-
+const snazzyStyle = [
+      {"featureType":"all","elementType":"labels","stylers":[{"visibility":"off"}]},
+      {"featureType":"poi.park","elementType":"geometry.fill","stylers":[{"color":"#aadd55"}]},
+      {"featureType":"road.highway","elementType":"labels","stylers":[{"visibility":"off"}]},
+      {"featureType":"road.arterial","elementType":"labels.text","stylers":[{"visibility":"on"}]},
+      {"featureType":"road.local","elementType":"labels.text","stylers":[{"visibility":"on"}]},
+      {"featureType":"water","elementType":"geometry.fill","stylers":[{"color":"#0099dd"}]}
+    ];
 ];
 
     map = new google.maps.Map(document.getElementById("map"), {
