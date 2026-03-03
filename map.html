@@ -186,81 +186,37 @@ document.addEventListener("DOMContentLoaded", function() {
           map: map,
           label: {
             text: markerLabel,
-            color: "#000000"
+            color: "#FFFFFF"
           },
           icon: {
             path: google.maps.SymbolPath.CIRCLE,
             scale: 12,
-            fillColor: "#90a955",
+            fillColor: "#344E41",
             fillOpacity: 1,
             strokeWeight: 1,
-            strokeColor: "#000000"
+            strokeColor: "#FFFFFF"
           },
           title: row.Name
         });
 
         function buildInfoContent() {
-  let html = `
-    <div style="
-      font-family: 'Inter', sans-serif;
-      color: #333;
-      background-color: #f9f9f9;
-      border-radius: 8px;
-      padding: 12px 16px;
-      max-width: 250px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      position: relative;
-    ">
-      <div style="
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 8px;
-      ">
-        <strong style="
-          font-size: 18px;
-          color: #111;
-        ">${row.Name}</strong>
-        <span style="
-          cursor: pointer;
-          font-weight: bold;
-          font-size: 16px;
-          color: #888;
-          transition: color 0.2s;
-        " onclick="this.parentElement.parentElement.style.display='none'" 
-           onmouseover="this.style.color='#f00'" 
-           onmouseout="this.style.color='#888'">✖</span>
-      </div>
-  `;
+          let html = "<div style='font-family:Inter,sans-serif;color:#000000'>";
+          html += "<strong style='font-size:16px;color:#000000'>" + row.Name + "</strong>";
 
-  if(childrenMap[row.Name]) {
-    const sortedChildren = childrenMap[row.Name]
-      .sort((a, b) => a.Name.localeCompare(b.Name));
+          if(childrenMap[row.Name]) {
+            const sortedChildren = childrenMap[row.Name]
+              .sort((a,b) => a.Name.localeCompare(b.Name));
 
-    html += `<ul style="
-        list-style-type: disc;
-        padding-left: 20px;
-        margin: 0;
-      ">`;
+            html += "<ul style='margin-top:8px;padding-left:18px'>";
+            sortedChildren.forEach(child => {
+              html += "<li>" + child.Name + "</li>";
+            });
+            html += "</ul>";
+          }
 
-    sortedChildren.forEach(child => {
-      html += `<li style="
-          padding: 4px 0;
-          font-size: 14px;
-          color: #555;
-          transition: color 0.2s;
-        " onmouseover="this.style.color='#111'" onmouseout="this.style.color='#555'">
-        ${child.Name}
-      </li>`;
-    });
-
-    html += "</ul>";
-  }
-
-  html += "</div>";
-  return html;
-}
-}
+          html += "</div>";
+          return html;
+        }
 
         const parentDiv = document.createElement("div");
         parentDiv.className = "place parent";
