@@ -54,7 +54,7 @@ h1 {
 
 @media (max-width: 600px) {
   #places-list {
-    grid-template-columns: 2fr;
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
@@ -189,7 +189,7 @@ document.addEventListener("DOMContentLoaded", function() {
           map: map,
           label: {
             text: markerLabel,
-            color: "#ffffff"
+            color: "#000000"
           },
           icon: {
             path: google.maps.SymbolPath.CIRCLE,
@@ -197,7 +197,7 @@ document.addEventListener("DOMContentLoaded", function() {
             fillColor: "#FF0000",
             fillOpacity: 1,
             strokeColor: "#000000",
-            strokeWeight: 2
+            strokeWeight: 1
           },
           title: row.Name
         });
