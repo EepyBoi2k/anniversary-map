@@ -21,12 +21,12 @@ body {
 }
 
 h1 {
-    font-family: 'Caviar Dreams', sans-serif;
-    text-align: center;
-    padding: 20px;
-    color: #344E41;
-    letter-spacing: 1px;
-    font-size: 50px;
+  font-family: 'Caviar Dreams', sans-serif;
+  text-align: center;
+  padding: 20px;
+  color: #344E41;
+  letter-spacing: 1px;
+  font-size: 50px;
 }
 
 #map {
@@ -45,15 +45,11 @@ h1 {
 }
 
 @media (max-width: 1024px) {
-  #places-list {
-    grid-template-columns: repeat(3, 1fr);
-  }
+  #places-list { grid-template-columns: repeat(3, 1fr); }
 }
 
 @media (max-width: 600px) {
-  #places-list {
-    grid-template-columns: repeat(2, 1fr);
-  }
+  #places-list { grid-template-columns: repeat(2, 1fr); }
 }
 
 .place.parent {
@@ -101,6 +97,42 @@ footer {
   margin-bottom: 40px;
   font-size: 14px;
   color: #344E41;
+}
+
+/* ========================= */
+/* INFO WINDOW STYLING */
+/* ========================= */
+
+.info-box {
+  font-family: 'Inter', sans-serif;
+  padding: 12px 14px;
+  min-width: 220px;
+  max-width: 260px;
+  color: #344E41;
+}
+
+.info-title {
+  font-family: 'Caviar Dreams', sans-serif;
+  font-size: 18px;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.info-divider {
+  height: 1px;
+  background: #D8F3DC;
+  margin: 8px 0 10px 0;
+}
+
+.info-list {
+  margin: 0;
+  padding-left: 16px;
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+.info-list li {
+  margin-bottom: 4px;
 }
 </style>
 </head>
@@ -184,10 +216,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const marker = new google.maps.Marker({
           position: { lat: parseFloat(row.Lat), lng: parseFloat(row.Lng) },
           map: map,
-          label: {
-            text: markerLabel,
-            color: "#FFFFFF"
-          },
+          label: { text: markerLabel, color: "#FFFFFF" },
           icon: {
             path: google.maps.SymbolPath.CIRCLE,
             scale: 12,
@@ -200,21 +229,29 @@ document.addEventListener("DOMContentLoaded", function() {
         });
 
         function buildInfoContent() {
-          let html = "<div style='font-family:Inter,sans-serif;color:#000000'>";
-          html += "<strong style='font-size:16px;color:#000000'>" + row.Name + "</strong>";
+
+          let html = `
+            <div class="info-box">
+              <div class="info-title">${row.Name}</div>
+          `;
 
           if(childrenMap[row.Name]) {
+
             const sortedChildren = childrenMap[row.Name]
               .sort((a,b) => a.Name.localeCompare(b.Name));
 
-            html += "<ul style='margin-top:8px;padding-left:18px'>";
+            html += `<div class="info-divider"></div>`;
+            html += `<ul class="info-list">`;
+
             sortedChildren.forEach(child => {
-              html += "<li>" + child.Name + "</li>";
+              html += `<li>${child.Name}</li>`;
             });
-            html += "</ul>";
+
+            html += `</ul>`;
           }
 
-          html += "</div>";
+          html += `</div>`;
+
           return html;
         }
 
