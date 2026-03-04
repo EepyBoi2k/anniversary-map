@@ -106,7 +106,7 @@ footer {
 .info-box {
   position: relative;
   font-family: 'Inter', sans-serif;
-  padding: 14px 16px 16px 16px;
+  padding: 16px 40px 16px 16px; /* extra right padding so X doesn’t overlap */
   min-width: 230px;
   max-width: 270px;
   color: #344E41;
@@ -117,6 +117,7 @@ footer {
   font-size: 18px;
   letter-spacing: 0.5px;
   margin-bottom: 6px;
+  padding-right: 10px;
 }
 
 .info-divider {
@@ -136,7 +137,7 @@ footer {
   margin-bottom: 4px;
 }
 
-/* Close button */
+/* Custom Close Button */
 .info-close {
   position: absolute;
   top: 10px;
@@ -158,6 +159,11 @@ footer {
 .info-close:hover {
   background: #588157;
   transform: scale(1.05);
+}
+
+/* Remove Google's default close button */
+.gm-ui-hover-effect {
+  display: none !important;
 }
 </style>
 </head>
@@ -210,7 +216,6 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     infoWindow = new google.maps.InfoWindow();
-
     Papa.parse('https://docs.google.com/spreadsheets/d/e/2PACX-1vSfGFuqglhR7Ss03-SJVzB_St46vLigoCEj6MOmJmSBsqg2SD0ebiTRt49IZ6jJnhYPlZtVBVpvX8ZG/pub?output=csv', {
       download: true,
       header: true,
@@ -262,7 +267,6 @@ document.addEventListener("DOMContentLoaded", function() {
           `;
 
           if(childrenMap[row.Name]) {
-
             const sortedChildren = childrenMap[row.Name]
               .sort((a,b) => a.Name.localeCompare(b.Name));
 
@@ -277,24 +281,16 @@ document.addEventListener("DOMContentLoaded", function() {
           }
 
           html += `</div>`;
-
           return html;
-        }
-
-        const parentDiv = document.createElement("div");
-        parentDiv.className = "place parent";
-
-        function setActive(div) {
-          if(activeDiv) activeDiv.classList.remove("active");
-          div.classList.add("active");
-          activeDiv = div;
         }
 
         marker.addListener("click", function() {
           infoWindow.setContent(buildInfoContent());
           infoWindow.open(map, marker);
-          setActive(parentDiv);
         });
+
+        const parentDiv = document.createElement("div");
+        parentDiv.className = "place parent";
 
         const header = document.createElement("div");
         header.className = "place-header";
@@ -316,7 +312,6 @@ document.addEventListener("DOMContentLoaded", function() {
           map.setZoom(16);
           infoWindow.setContent(buildInfoContent());
           infoWindow.open(map, marker);
-          setActive(parentDiv);
         };
 
         listDiv.appendChild(parentDiv);
