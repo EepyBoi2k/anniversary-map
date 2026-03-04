@@ -282,7 +282,8 @@ document.addEventListener("DOMContentLoaded", function() {
 
           html += `</div>`;
           return html;
-          
+        }
+
         marker.addListener("click", function() {
             map.panTo(marker.getPosition());
             infoWindow.setContent(buildInfoContent());
@@ -333,4 +334,3 @@ src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAVImtk_O82lOoIWlJGkYM_sMw
 
 </body>
 </html>
-
