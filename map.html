@@ -282,11 +282,11 @@ document.addEventListener("DOMContentLoaded", function() {
 
           html += `</div>`;
           return html;
-        }
-
+          
         marker.addListener("click", function() {
-          infoWindow.setContent(buildInfoContent());
-          infoWindow.open(map, marker);
+            map.panTo(marker.getPosition());
+            infoWindow.setContent(buildInfoContent());
+            infoWindow.open(map, marker);
         });
 
         const parentDiv = document.createElement("div");
@@ -333,3 +333,4 @@ src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAVImtk_O82lOoIWlJGkYM_sMw
 
 </body>
 </html>
+
