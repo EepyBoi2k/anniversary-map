@@ -104,10 +104,11 @@ footer {
 /* ========================= */
 
 .info-box {
+  position: relative;
   font-family: 'Inter', sans-serif;
-  padding: 12px 14px;
-  min-width: 220px;
-  max-width: 260px;
+  padding: 14px 16px 16px 16px;
+  min-width: 230px;
+  max-width: 270px;
   color: #344E41;
 }
 
@@ -133,6 +134,30 @@ footer {
 
 .info-list li {
   margin-bottom: 4px;
+}
+
+/* Close button */
+.info-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #344E41;
+  color: #FFFFFF;
+  font-size: 14px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.info-close:hover {
+  background: #588157;
+  transform: scale(1.05);
 }
 </style>
 </head>
@@ -232,6 +257,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
           let html = `
             <div class="info-box">
+              <div class="info-close" onclick="closeInfoWindow()">×</div>
               <div class="info-title">${row.Name}</div>
           `;
 
@@ -297,6 +323,10 @@ document.addEventListener("DOMContentLoaded", function() {
       }
     });
   }
+
+  window.closeInfoWindow = function() {
+    infoWindow.close();
+  };
 
   window.initMap = initMap;
 });
